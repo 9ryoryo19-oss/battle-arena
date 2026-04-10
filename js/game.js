@@ -356,3 +356,71 @@ const Game = (() => {
     btnUp,
   };
 })();
+
+// ============================================
+// 設定機能の追加
+// ============================================
+const GameSettings = {
+  cpu: 'normal',   // easy / normal / hard
+  time: 99,
+};
+
+Game.setSetting = function(key, value) {
+  GameSettings[key] = value;
+  // ボタンのactive切り替え
+  if (key === 'cpu') {
+    ['easy','normal','hard'].forEach(v => {
+      const el = document.getElementById('cpu-' + v);
+      if (el) el.classList.toggle('active', v === value);
+    });
+  } else if (key === 'time') {
+    [60, 99, 999].forEach(v => {
+      const el = document.getElementById('time-' + v);
+      if (el) el.classList.toggle('active', v === value);
+    });
+  }
+};
+
+// CPUとタイマー設定をエンジンに反映
+const _origStart = Engine.prototype.start;
+Engine.prototype.start = function() {
+  // CPU難易度
+  const diff = { easy: 0.35, normal: 0.65, hard: 0.9 };
+  this._cpuDifficulty = diff[GameSettings.cpu] || 0.65;
+  // タイマー
+  this.timer = GameSettings.time;
+  document.getElementById('round-timer').textContent = this.timer;
+  _origStart.call(this);
+};
+
+// スティックのジャンプを無効化（専用ジャンプボタンを使う）
+const _origHandleStick = handleStickMove || null;
+function handleStickMove(touch, player, knob, ox, oy, maxDist) {
+  if (!engine) return;
+  const f = player === 'p1' ? engine.p1 : engine.p2;
+  const dx = touch.clientX - ox;
+  const dy = touch.clientY - oy;
+  const dist = Math.sqrt(dx*dx + dy*dy);
+  const clampedDist = Math.min(dist, maxDist);
+  const angle = Math.atan2(dy, dx);
+  const kx = Math.cos(angle) * clampedDist;
+  const ky = Math.sin(angle) * clampedDist;
+  knob.style.transform = `translate(${kx}px, ${ky}px)`;
+  const threshold = 0.4;
+  f.input.left = dx / maxDist < -threshold;
+  f.input.right = dx / maxDist > threshold;
+  // ジャンプはスティックではなくボタンで行う → ここではfalseに固定
+  // f.input.jump はジャンプボタンで制御
+}
+
+// 縦向き検知
+window.addEventListener('orientationchange', checkOrientation);
+window.addEventListener('resize', checkOrientation);
+function checkOrientation() {
+  const overlay = document.getElementById('rotate-overlay');
+  if (!overlay) return;
+  // portrait判定
+  const isPortrait = window.innerHeight > window.innerWidth;
+  overlay.style.display = isPortrait ? 'flex' : 'none';
+}
+checkOrientation();

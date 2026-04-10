@@ -521,3 +521,147 @@ html, body {
   from { opacity: 0.3; }
   to { opacity: 0; }
 }
+
+/* ============================================
+   追加CSS: 横向き・ボタン配置・設定画面
+   ============================================ */
+
+/* 縦向き警告オーバーレイ */
+.rotate-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 9999;
+  background: #0a0a0f;
+  flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 20px;
+}
+.rotate-icon { font-size: 60px; animation: rotateAnim 1.5s ease-in-out infinite; }
+@keyframes rotateAnim {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(90deg); }
+}
+.rotate-text {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 16px; color: var(--text);
+  letter-spacing: 0.05em; text-align: center;
+}
+
+/* 縦向きのとき警告表示 */
+@media (orientation: portrait) {
+  .rotate-overlay { display: flex !important; }
+}
+@media (orientation: landscape) {
+  .rotate-overlay { display: none !important; }
+}
+
+/* バトルコントロール: 左右に分離 */
+.controls {
+  position: absolute; bottom: 0;
+  display: flex; align-items: center;
+  padding: 10px 12px; gap: 14px; z-index: 10;
+}
+.p1-controls {
+  left: 0;
+  flex-direction: row; /* スティック左、ボタン右 */
+}
+.p2-controls {
+  right: 0;
+  flex-direction: row; /* ボタン左、スティック右 */
+}
+
+/* ボタングリッド 2x2 */
+.action-btns {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.action-row {
+  display: flex; flex-direction: row; gap: 8px;
+}
+
+/* ジャンプボタン */
+.btn-jump {
+  width: 48px; height: 48px;
+  background: rgba(100,200,100,0.25);
+  border: 2px solid #4ade80;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(74,222,128,0.3);
+  font-size: 18px; font-weight: 900; color: #4ade80;
+}
+
+/* ボタンサイズ調整 */
+.btn-normal, .btn-mid, .btn-special, .btn-jump {
+  width: 50px; height: 50px;
+  display: flex; align-items: center; justify-content: center;
+  touch-action: none;
+}
+.btn-normal { font-size: 13px; }
+.btn-mid { font-size: 12px; }
+.btn-special { font-size: 11px; }
+
+/* スティックエリア */
+.stick-area {
+  width: 88px; height: 88px;
+  display: flex; align-items: center; justify-content: center;
+  touch-action: none;
+}
+.stick-base {
+  width: 80px; height: 80px;
+  background: rgba(255,255,255,0.06);
+  border: 2px solid rgba(255,255,255,0.18);
+  border-radius: 50%;
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+}
+.stick-knob {
+  width: 34px; height: 34px;
+  background: rgba(255,255,255,0.28);
+  border: 2px solid rgba(255,255,255,0.5);
+  border-radius: 50%;
+  position: absolute;
+  pointer-events: none;
+}
+
+/* 設定画面 */
+#screen-settings {
+  padding-top: 60px;
+  justify-content: flex-start;
+  overflow-y: auto;
+  background: var(--bg-dark);
+}
+.settings-content {
+  width: 100%; max-width: 480px;
+  padding: 20px;
+  display: flex; flex-direction: column; gap: 24px;
+}
+.settings-section {
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.settings-label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 12px; color: var(--gold);
+  letter-spacing: 0.1em;
+}
+.settings-options {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.setting-opt {
+  padding: 8px 16px;
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-dim); font-size: 14px;
+  cursor: pointer; transition: all 0.15s;
+}
+.setting-opt.active {
+  border-color: var(--accent);
+  color: var(--text);
+  background: rgba(124,58,237,0.2);
+}
+.setting-opt:active { transform: scale(0.96); }
+.settings-info {
+  font-size: 12px; color: var(--text-dim);
+  line-height: 1.8;
+}
