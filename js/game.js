@@ -329,6 +329,8 @@ const Game = (() => {
   function btnDown(player, btn) {
     if (!engine) return;
     const f = player === 'p1' ? engine.p1 : engine.p2;
+    // prevInputをfalseにしてからtrueにすることでjustPressedを発火させる
+    f.prevInput[btn] = false;
     f.input[btn] = true;
   }
 

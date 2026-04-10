@@ -92,7 +92,7 @@ class Fighter {
 
     // Attack input
     if (this.state !== 'hurt' && this.state !== 'dead') {
-      const justPressed = (key) => this.input[key];
+      const justPressed = (key) => this.input[key] && !this.prevInput[key];
 
       if (this.attackCooldown === 0) {
         if (justPressed('special')) {
