@@ -9,13 +9,9 @@ const Game = (() => {
   let selectingPlayer = 'p1';
   let engine = null;
 
-  // ============================================
-  // SCREEN MANAGEMENT
-  // ============================================
   function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
-
     if (id === 'screen-character') initCharSelect();
     if (id === 'screen-stage') initStageSelect();
     if (id === 'screen-battle') initBattle();
@@ -28,16 +24,12 @@ const Game = (() => {
     showScreen('screen-character');
   }
 
-  // ============================================
-  // CHARACTER SELECT
-  // ============================================
+  // ============ CHARACTER SELECT ============
   function initCharSelect() {
     selectedChars = { p1: null, p2: null };
     selectingPlayer = 'p1';
-
     const grid = document.getElementById('char-grid');
     grid.innerHTML = '';
-
     CHARACTERS.forEach(char => {
       const card = document.createElement('div');
       card.className = 'char-card';
@@ -46,138 +38,87 @@ const Game = (() => {
       card.addEventListener('click', () => selectChar(char));
       grid.appendChild(card);
     });
-
-    document.getElementById('p1-char-display').innerHTML = '?';
-    document.getElementById('p2-char-display').innerHTML = '?';
+    document.getElementById('p1-char-display').textContent = '?';
+    document.getElementById('p2-char-display').textContent = '?';
     document.getElementById('p1-char-display').className = 'selected-char';
     document.getElementById('p2-char-display').className = 'selected-char';
     document.getElementById('start-fight-btn').style.display = 'none';
-    updateSelectIndicator();
+    document.getElementById('selecting-indicator').textContent = selectedMode === 'vs-cpu' ? 'あなたのキャラを選んでください' : 'P1 キャラを選択中...';
   }
 
   function selectChar(char) {
     if (selectedMode === 'vs-cpu') {
       selectedChars.p1 = char;
-      // CPU random
       const others = CHARACTERS.filter(c => c.id !== char.id);
       selectedChars.p2 = others[Math.floor(Math.random() * others.length)];
-      updateCharDisplay();
+      document.getElementById('p1-char-display').textContent = char.icon;
+      document.getElementById('p1-char-display').classList.add('p1-selected');
+      document.getElementById('p2-char-display').textContent = selectedChars.p2.icon;
+      document.getElementById('p2-char-display').classList.add('p2-selected');
       document.getElementById('start-fight-btn').style.display = 'block';
       document.getElementById('selecting-indicator').textContent = 'P1選択完了！';
     } else {
-      // 2P mode
       if (selectingPlayer === 'p1') {
         selectedChars.p1 = char;
-        selectingPlayer = 'p2';
-        updateCharDisplay();
-        updateSelectIndicator();
+        document.getElementById('p1-char-display').textContent = char.icon;
+        document.getElementById('p1-char-display').classList.add('p1-selected');
         document.querySelectorAll('.char-card').forEach(c => c.classList.remove('p1-selected'));
         document.querySelector(`.char-card[data-id="${char.id}"]`).classList.add('p1-selected');
+        selectingPlayer = 'p2';
+        document.getElementById('selecting-indicator').textContent = 'P2 キャラを選択中...';
       } else {
         selectedChars.p2 = char;
-        updateCharDisplay();
+        document.getElementById('p2-char-display').textContent = char.icon;
+        document.getElementById('p2-char-display').classList.add('p2-selected');
+        document.querySelector(`.char-card[data-id="${char.id}"]`).classList.add('p2-selected');
         document.getElementById('start-fight-btn').style.display = 'block';
         document.getElementById('selecting-indicator').textContent = '両プレイヤー選択完了！';
-        document.querySelector(`.char-card[data-id="${char.id}"]`).classList.add('p2-selected');
       }
     }
   }
 
-  function updateCharDisplay() {
-    if (selectedChars.p1) {
-      document.getElementById('p1-char-display').innerHTML = selectedChars.p1.icon;
-      document.getElementById('p1-char-display').classList.add('p1-selected');
-    }
-    if (selectedChars.p2) {
-      document.getElementById('p2-char-display').innerHTML = selectedChars.p2.icon;
-      document.getElementById('p2-char-display').classList.add('p2-selected');
-    }
-    if (selectedChars.p1) {
-      document.getElementById('p1-name').textContent = selectedChars.p1.name;
-    }
-    if (selectedChars.p2) {
-      document.getElementById('p2-name').textContent = selectedChars.p2.name;
-    }
-  }
-
-  function updateSelectIndicator() {
-    const ind = document.getElementById('selecting-indicator');
-    if (selectedMode === 'vs-cpu') {
-      ind.textContent = 'あなたのキャラを選んでください';
-    } else {
-      ind.textContent = selectingPlayer === 'p1' ? 'P1 キャラを選択中...' : 'P2 キャラを選択中...';
-    }
-  }
-
-  // ============================================
-  // STAGE SELECT
-  // ============================================
+  // ============ STAGE SELECT ============
   function initStageSelect() {
     selectedStage = STAGES[0];
     const grid = document.getElementById('stage-grid');
     grid.innerHTML = '';
-
     STAGES.forEach((stage, i) => {
       const card = document.createElement('div');
       card.className = 'stage-card' + (i === 0 ? ' selected' : '');
-      card.style.background = stage.previewColor;
-
-      // Mini preview canvas
       const mini = document.createElement('canvas');
       mini.width = 200; mini.height = 112;
       mini.className = 'stage-preview';
       stage.bg(mini.getContext('2d'), 200, 112);
       card.appendChild(mini);
-
       const nameEl = document.createElement('div');
       nameEl.className = 'stage-name';
       nameEl.textContent = stage.name;
       card.appendChild(nameEl);
-
       card.addEventListener('click', () => {
         document.querySelectorAll('.stage-card').forEach(c => c.classList.remove('selected'));
         card.classList.add('selected');
         selectedStage = stage;
       });
-
       grid.appendChild(card);
     });
   }
 
-  // ============================================
-  // BATTLE
-  // ============================================
-  function startBattle() {
-    showScreen('screen-battle');
-  }
+  // ============ BATTLE ============
+  function startBattle() { showScreen('screen-battle'); }
 
   function initBattle() {
     if (engine) engine.stop();
-
-    // Show/hide P2 controls
-    const p2ctrl = document.getElementById('p2-controls');
-    if (selectedMode === 'vs-player') {
-      p2ctrl.style.display = 'flex';
-    } else {
-      p2ctrl.style.display = 'none';
-    }
-
-    // Names in HUD
+    document.getElementById('p2-controls').style.display = selectedMode === 'vs-player' ? 'flex' : 'none';
     document.getElementById('p1-name').textContent = selectedChars.p1?.name || 'P1';
     document.getElementById('p2-name').textContent = selectedChars.p2?.name || 'P2';
     document.getElementById('round-label').textContent = 'ROUND 1';
+    document.getElementById('round-timer').textContent = '99';
 
-    // Create engine
     const canvas = document.getElementById('game-canvas');
     engine = new Engine(canvas, selectedStage, selectedChars.p1, selectedChars.p2, selectedMode);
-
-    // Setup input
     setupKeyboard();
     setupTouch();
-
-    setTimeout(() => {
-      engine.start();
-    }, 500);
+    setTimeout(() => engine.start(), 300);
   }
 
   function showResult(winner) {
@@ -187,242 +128,162 @@ const Game = (() => {
     document.getElementById('result-name').textContent = winner.char.name;
   }
 
-  function rematch() {
-    showScreen('screen-battle');
-  }
+  function rematch() { showScreen('screen-battle'); }
 
   function togglePause() {
     if (!engine) return;
     engine.paused = !engine.paused;
     document.getElementById('pause-overlay').style.display = engine.paused ? 'flex' : 'none';
-    if (!engine.paused && engine.running === false) {
-      engine.running = true;
-      engine.loop();
-    }
+    if (!engine.paused && !engine.running) { engine.running = true; engine.loop(); }
   }
 
-  // ============================================
-  // KEYBOARD INPUT
-  // ============================================
+  // ============ KEYBOARD ============
   function setupKeyboard() {
     document.onkeydown = (e) => {
       if (!engine) return;
-      const p1 = engine.p1;
-      const p2 = engine.p2;
-
+      const p1 = engine.p1, p2 = engine.p2;
       switch(e.key) {
-        // P1: WASD + F/G/H
         case 'a': case 'A': p1.input.left = true; break;
         case 'd': case 'D': p1.input.right = true; break;
-        case 'w': case 'W': if (!p1.input.jump) { p1.input.jump = true; } break;
-        case 'f': case 'F': p1.input.normal = true; break;
-        case 'g': case 'G': p1.input.mid = true; break;
-        case 'h': case 'H': p1.input.special = true; break;
-
-        // P2: Arrow keys + numpad/JKL
+        case 'w': case 'W': case ' ': p1.input.jump = true; break;
+        case 'f': case 'F': p1.queueAttack('normal'); break;
+        case 'g': case 'G': p1.queueAttack('mid'); break;
+        case 'h': case 'H': p1.queueAttack('special'); break;
         case 'ArrowLeft': p2.input.left = true; e.preventDefault(); break;
         case 'ArrowRight': p2.input.right = true; e.preventDefault(); break;
-        case 'ArrowUp': if (!p2.input.jump) { p2.input.jump = true; } e.preventDefault(); break;
-        case 'j': case 'J': p2.input.normal = true; break;
-        case 'k': case 'K': p2.input.mid = true; break;
-        case 'l': case 'L': p2.input.special = true; break;
-
+        case 'ArrowUp': p2.input.jump = true; e.preventDefault(); break;
+        case 'j': case 'J': p2.queueAttack('normal'); break;
+        case 'k': case 'K': p2.queueAttack('mid'); break;
+        case 'l': case 'L': p2.queueAttack('special'); break;
         case 'Escape': togglePause(); break;
       }
     };
-
     document.onkeyup = (e) => {
       if (!engine) return;
-      const p1 = engine.p1;
-      const p2 = engine.p2;
-
+      const p1 = engine.p1, p2 = engine.p2;
       switch(e.key) {
         case 'a': case 'A': p1.input.left = false; break;
         case 'd': case 'D': p1.input.right = false; break;
-        case 'w': case 'W': p1.input.jump = false; break;
-        case 'f': case 'F': p1.input.normal = false; break;
-        case 'g': case 'G': p1.input.mid = false; break;
-        case 'h': case 'H': p1.input.special = false; break;
-
+        case 'w': case 'W': case ' ': p1.input.jump = false; break;
         case 'ArrowLeft': p2.input.left = false; break;
         case 'ArrowRight': p2.input.right = false; break;
         case 'ArrowUp': p2.input.jump = false; break;
-        case 'j': case 'J': p2.input.normal = false; break;
-        case 'k': case 'K': p2.input.mid = false; break;
-        case 'l': case 'L': p2.input.special = false; break;
       }
     };
   }
 
-  // ============================================
-  // TOUCH / VIRTUAL STICK
-  // ============================================
+  // ============ TOUCH CONTROLS ============
   function setupTouch() {
     setupStick('p1-stick-area', 'p1-stick-knob', 'p1');
-    if (selectedMode === 'vs-player') {
-      setupStick('p2-stick-area', 'p2-stick-knob', 'p2');
-    }
+    if (selectedMode === 'vs-player') setupStick('p2-stick-area', 'p2-stick-knob', 'p2');
   }
 
   function setupStick(areaId, knobId, player) {
     const area = document.getElementById(areaId);
     const knob = document.getElementById(knobId);
     if (!area || !knob) return;
+    let touchId = null, ox = 0, oy = 0;
+    const maxDist = 32;
 
-    let touchId = null;
-    let originX = 0, originY = 0;
-    const maxDist = 30;
-
-    area.addEventListener('touchstart', (e) => {
+    area.addEventListener('touchstart', e => {
+      e.preventDefault();
       if (touchId !== null) return;
-      const touch = e.changedTouches[0];
-      touchId = touch.identifier;
+      const t = e.changedTouches[0];
+      touchId = t.identifier;
       const rect = area.getBoundingClientRect();
-      originX = rect.left + rect.width / 2;
-      originY = rect.top + rect.height / 2;
-      handleStickMove(touch, player, knob, originX, originY, maxDist);
-    }, { passive: true });
+      ox = rect.left + rect.width / 2;
+      oy = rect.top + rect.height / 2;
+      moveStick(t, player, knob, ox, oy, maxDist);
+    }, { passive: false });
 
-    area.addEventListener('touchmove', (e) => {
-      for (let t of e.changedTouches) {
-        if (t.identifier === touchId) {
-          handleStickMove(t, player, knob, originX, originY, maxDist);
-        }
+    area.addEventListener('touchmove', e => {
+      e.preventDefault();
+      for (const t of e.changedTouches) {
+        if (t.identifier === touchId) moveStick(t, player, knob, ox, oy, maxDist);
       }
-    }, { passive: true });
+    }, { passive: false });
 
-    area.addEventListener('touchend', (e) => {
-      for (let t of e.changedTouches) {
+    area.addEventListener('touchend', e => {
+      for (const t of e.changedTouches) {
         if (t.identifier === touchId) {
           touchId = null;
-          knob.style.transform = 'translate(0, 0)';
+          knob.style.transform = 'translate(0,0)';
           if (engine) {
             const f = player === 'p1' ? engine.p1 : engine.p2;
-            f.input.left = false;
-            f.input.right = false;
-            f.input.jump = false;
+            f.input.left = false; f.input.right = false; f.input.jump = false;
           }
         }
       }
-    }, { passive: true });
+    }, { passive: false });
   }
 
-  function handleStickMove(touch, player, knob, ox, oy, maxDist) {
+  function moveStick(touch, player, knob, ox, oy, maxDist) {
     if (!engine) return;
     const f = player === 'p1' ? engine.p1 : engine.p2;
     const dx = touch.clientX - ox;
     const dy = touch.clientY - oy;
     const dist = Math.sqrt(dx*dx + dy*dy);
-    const clampedDist = Math.min(dist, maxDist);
+    const clamped = Math.min(dist, maxDist);
     const angle = Math.atan2(dy, dx);
-    const kx = Math.cos(angle) * clampedDist;
-    const ky = Math.sin(angle) * clampedDist;
-
-    knob.style.transform = `translate(${kx}px, ${ky}px)`;
-
-    const threshold = 0.4;
-    f.input.left = dx / maxDist < -threshold;
+    knob.style.transform = `translate(${Math.cos(angle)*clamped}px,${Math.sin(angle)*clamped}px)`;
+    const threshold = 0.35;
+    f.input.left  = dx / maxDist < -threshold;
     f.input.right = dx / maxDist > threshold;
-    f.input.jump = dy / maxDist < -threshold;
+    // スティック上方向でジャンプ
+    const justUp = dy / maxDist < -threshold && !f.input.jump;
+    if (justUp) f.input.jump = true;
+    else if (dy / maxDist >= -threshold) f.input.jump = false;
   }
 
-  function btnDown(player, btn) {
-    if (!engine) return;
-    const f = player === 'p1' ? engine.p1 : engine.p2;
-    // prevInputをfalseにしてからtrueにすることでjustPressedを発火させる
-    f.prevInput[btn] = false;
-    f.input[btn] = true;
+  // ============ ATTACK BUTTONS (タップ確実発火) ============
+  function setupAttackBtn(btnId, player, attackType) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    btn.addEventListener('touchstart', e => {
+      e.preventDefault();
+      if (engine) {
+        const f = player === 'p1' ? engine.p1 : engine.p2;
+        f.queueAttack(attackType);
+      }
+    }, { passive: false });
+    btn.addEventListener('mousedown', e => {
+      e.preventDefault();
+      if (engine) {
+        const f = player === 'p1' ? engine.p1 : engine.p2;
+        f.queueAttack(attackType);
+      }
+    });
   }
 
-  function btnUp(player, btn) {
-    if (!engine) return;
-    const f = player === 'p1' ? engine.p1 : engine.p2;
-    f.input[btn] = false;
+  function setupJumpBtn(btnId, player) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    btn.addEventListener('touchstart', e => {
+      e.preventDefault();
+      if (engine) { const f = player === 'p1' ? engine.p1 : engine.p2; f.input.jump = true; }
+    }, { passive: false });
+    btn.addEventListener('touchend', e => {
+      e.preventDefault();
+      if (engine) { const f = player === 'p1' ? engine.p1 : engine.p2; f.input.jump = false; }
+    }, { passive: false });
+    btn.addEventListener('mousedown', () => { if (engine) { const f = player === 'p1' ? engine.p1 : engine.p2; f.input.jump = true; } });
+    btn.addEventListener('mouseup',   () => { if (engine) { const f = player === 'p1' ? engine.p1 : engine.p2; f.input.jump = false; } });
   }
 
-  // ============================================
-  // INIT
-  // ============================================
-  window.addEventListener('resize', () => {
-    if (engine) engine.resize();
-  });
+  // ボタンイベントをDOMロード後に設定
+  function initButtons() {
+    setupAttackBtn('p1-btn-normal',  'p1', 'normal');
+    setupAttackBtn('p1-btn-mid',     'p1', 'mid');
+    setupAttackBtn('p1-btn-special', 'p1', 'special');
+    setupJumpBtn('p1-btn-jump', 'p1');
+    setupAttackBtn('p2-btn-normal',  'p2', 'normal');
+    setupAttackBtn('p2-btn-mid',     'p2', 'mid');
+    setupAttackBtn('p2-btn-special', 'p2', 'special');
+    setupJumpBtn('p2-btn-jump', 'p2');
+  }
 
-  return {
-    showScreen,
-    selectMode,
-    startBattle,
-    showResult,
-    rematch,
-    togglePause,
-    btnDown,
-    btnUp,
-  };
+  window.addEventListener('resize', () => { if (engine) engine.resize(); });
+  document.addEventListener('DOMContentLoaded', initButtons);
+
+  return { showScreen, selectMode, startBattle, showResult, rematch, togglePause };
 })();
-
-// ============================================
-// 設定機能の追加
-// ============================================
-const GameSettings = {
-  cpu: 'normal',   // easy / normal / hard
-  time: 99,
-};
-
-Game.setSetting = function(key, value) {
-  GameSettings[key] = value;
-  // ボタンのactive切り替え
-  if (key === 'cpu') {
-    ['easy','normal','hard'].forEach(v => {
-      const el = document.getElementById('cpu-' + v);
-      if (el) el.classList.toggle('active', v === value);
-    });
-  } else if (key === 'time') {
-    [60, 99, 999].forEach(v => {
-      const el = document.getElementById('time-' + v);
-      if (el) el.classList.toggle('active', v === value);
-    });
-  }
-};
-
-// CPUとタイマー設定をエンジンに反映
-const _origStart = Engine.prototype.start;
-Engine.prototype.start = function() {
-  // CPU難易度
-  const diff = { easy: 0.35, normal: 0.65, hard: 0.9 };
-  this._cpuDifficulty = diff[GameSettings.cpu] || 0.65;
-  // タイマー
-  this.timer = GameSettings.time;
-  document.getElementById('round-timer').textContent = this.timer;
-  _origStart.call(this);
-};
-
-// スティックのジャンプを無効化（専用ジャンプボタンを使う）
-const _origHandleStick = handleStickMove || null;
-function handleStickMove(touch, player, knob, ox, oy, maxDist) {
-  if (!engine) return;
-  const f = player === 'p1' ? engine.p1 : engine.p2;
-  const dx = touch.clientX - ox;
-  const dy = touch.clientY - oy;
-  const dist = Math.sqrt(dx*dx + dy*dy);
-  const clampedDist = Math.min(dist, maxDist);
-  const angle = Math.atan2(dy, dx);
-  const kx = Math.cos(angle) * clampedDist;
-  const ky = Math.sin(angle) * clampedDist;
-  knob.style.transform = `translate(${kx}px, ${ky}px)`;
-  const threshold = 0.4;
-  f.input.left = dx / maxDist < -threshold;
-  f.input.right = dx / maxDist > threshold;
-  // ジャンプはスティックではなくボタンで行う → ここではfalseに固定
-  // f.input.jump はジャンプボタンで制御
-}
-
-// 縦向き検知
-window.addEventListener('orientationchange', checkOrientation);
-window.addEventListener('resize', checkOrientation);
-function checkOrientation() {
-  const overlay = document.getElementById('rotate-overlay');
-  if (!overlay) return;
-  // portrait判定
-  const isPortrait = window.innerHeight > window.innerWidth;
-  overlay.style.display = isPortrait ? 'flex' : 'none';
-}
-checkOrientation();

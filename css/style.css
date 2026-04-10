@@ -427,7 +427,7 @@ html, body {
 .controls {
   position: absolute; bottom: 0;
   display: flex; align-items: center;
-  padding: 8px 10px; gap: 8px; z-index: 10;
+  padding: 8px 10px; gap: 12px; z-index: 10;
   height: 110px;
 }
 .p1-controls { left: 0; flex-direction: row; }
@@ -438,7 +438,6 @@ html, body {
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
-
 .stick-base {
   width: 80px; height: 80px;
   background: rgba(255,255,255,0.05);
@@ -447,66 +446,57 @@ html, body {
   position: relative;
   display: flex; align-items: center; justify-content: center;
 }
-
 .stick-knob {
-  width: 36px; height: 36px;
+  width: 34px; height: 34px;
   background: rgba(255,255,255,0.25);
   border: 2px solid rgba(255,255,255,0.4);
   border-radius: 50%;
   position: absolute;
   pointer-events: none;
-  transition: transform 0.05s;
 }
 
-/* 攻撃ボタン：縦に3つ並べる */
-.action-btns {
+/* ボタングループ */
+.btn-group {
   display: flex; flex-direction: column;
-  gap: 6px; align-items: center;
+  gap: 6px;
+}
+.btn-row-top, .btn-row-bot {
+  display: flex; gap: 6px; justify-content: center;
 }
 
 .action-btn {
   border: none; border-radius: 50%;
-  font-size: 11px; font-weight: 700;
-  cursor: pointer; color: #fff;
+  font-weight: 700; cursor: pointer; color: #fff;
   display: flex; align-items: center; justify-content: center;
   -webkit-user-select: none; user-select: none;
   transition: transform 0.08s;
+  font-family: 'Noto Sans JP', sans-serif;
 }
-.action-btn:active { transform: scale(0.85); }
+.action-btn:active { transform: scale(0.82); opacity: 0.8; }
 
 .btn-normal {
-  width: 54px; height: 54px;
+  width: 50px; height: 50px; font-size: 13px;
   background: rgba(0,212,255,0.25);
   border: 2px solid var(--p1-color);
   box-shadow: 0 0 10px rgba(0,212,255,0.3);
-  font-size: 13px;
 }
 .btn-mid {
-  width: 44px; height: 44px;
+  width: 50px; height: 50px; font-size: 12px;
   background: rgba(255,215,0,0.2);
   border: 2px solid var(--gold);
   box-shadow: 0 0 8px rgba(255,215,0,0.25);
-  font-size: 11px;
 }
 .btn-special {
-  width: 38px; height: 38px;
+  width: 44px; height: 44px; font-size: 10px;
   background: rgba(255,68,102,0.25);
   border: 2px solid var(--p2-color);
   box-shadow: 0 0 8px rgba(255,68,102,0.25);
-  font-size: 10px;
 }
-
-.p2-controls .btn-normal {
-  border-color: var(--p2-color);
-  background: rgba(255,68,102,0.25);
-  box-shadow: 0 0 10px rgba(255,68,102,0.3);
-}
-.p2-controls .btn-mid {
-  border-color: var(--gold);
-}
-.p2-controls .btn-special {
-  border-color: var(--p1-color);
-  background: rgba(0,212,255,0.25);
+.btn-jump {
+  width: 44px; height: 44px; font-size: 16px;
+  background: rgba(124,58,237,0.25);
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 8px rgba(124,58,237,0.3);
 }
 
 /* ============ PAUSE ============ */

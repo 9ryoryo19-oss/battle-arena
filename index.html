@@ -32,7 +32,7 @@
             <span class="btn-icon">⚙️</span> 設定
           </button>
         </div>
-        <div class="title-version">v0.1.0 Phase 1</div>
+        <div class="title-version">v0.1.1</div>
       </div>
     </div>
 
@@ -44,21 +44,17 @@
       </div>
       <div class="settings-content">
         <div class="settings-item">
-          <div class="settings-label">操作方法 - P1</div>
-          <div class="settings-value">移動: 仮想スティック</div>
-          <div class="settings-value">攻: 通常攻撃　中: 中攻撃　必殺: 必殺技</div>
+          <div class="settings-label">スマホ操作</div>
+          <div class="settings-value">左スティック: 移動 / ↑でジャンプ</div>
+          <div class="settings-value">右ボタン: ⬆攻・中・必殺 / ⬆ジャンプ</div>
         </div>
         <div class="settings-item">
-          <div class="settings-label">操作方法 - PC (P1)</div>
-          <div class="settings-value">移動: WASD　攻撃: F / G / H</div>
+          <div class="settings-label">PC操作 P1</div>
+          <div class="settings-value">WASD: 移動/ジャンプ　F: 攻　G: 中　H: 必殺</div>
         </div>
         <div class="settings-item">
-          <div class="settings-label">操作方法 - PC (P2)</div>
-          <div class="settings-value">移動: 矢印キー　攻撃: J / K / L</div>
-        </div>
-        <div class="settings-item">
-          <div class="settings-label">バージョン</div>
-          <div class="settings-value">v0.1.0 Phase 1</div>
+          <div class="settings-label">PC操作 P2</div>
+          <div class="settings-value">矢印キー: 移動/ジャンプ　J: 攻　K: 中　L: 必殺</div>
         </div>
       </div>
     </div>
@@ -90,19 +86,19 @@
         <h2>キャラクター選択</h2>
       </div>
       <div class="char-select-area">
-        <div class="player-select" id="p1-select">
+        <div class="player-select">
           <div class="player-label p1-label">P1</div>
           <div class="selected-char" id="p1-char-display">?</div>
         </div>
         <div class="vs-text">VS</div>
-        <div class="player-select" id="p2-select">
+        <div class="player-select">
           <div class="player-label p2-label">P2</div>
           <div class="selected-char" id="p2-char-display">?</div>
         </div>
       </div>
       <div class="char-grid" id="char-grid"></div>
       <div class="char-select-footer">
-        <div class="selecting-indicator" id="selecting-indicator">P1 キャラを選択中...</div>
+        <div class="selecting-indicator" id="selecting-indicator">キャラを選択中...</div>
         <button class="start-btn" id="start-fight-btn" onclick="Game.showScreen('screen-stage')" style="display:none">
           ステージ選択へ ▶
         </button>
@@ -121,9 +117,10 @@
 
     <!-- BATTLE SCREEN -->
     <div id="screen-battle" class="screen">
+      <!-- HUD -->
       <div class="battle-hud">
         <div class="hud-player p1-hud">
-          <div class="hud-name" id="p1-name">FIGHTER</div>
+          <div class="hud-name" id="p1-name">P1</div>
           <div class="hp-bar-wrap">
             <div class="hp-bar p1-hp" id="p1-hp-bar"></div>
           </div>
@@ -134,7 +131,7 @@
           <div class="round-label" id="round-label">ROUND 1</div>
         </div>
         <div class="hud-player p2-hud">
-          <div class="hud-name" id="p2-name">FIGHTER</div>
+          <div class="hud-name" id="p2-name">P2</div>
           <div class="hp-bar-wrap">
             <div class="hp-bar p2-hp" id="p2-hp-bar"></div>
           </div>
@@ -144,43 +141,43 @@
 
       <canvas id="game-canvas"></canvas>
 
-      <!-- Controls P1 -->
-      <div class="controls p1-controls">
+      <!-- P1 コントロール（左下） -->
+      <div class="controls p1-controls" id="p1-controls">
+        <!-- 左: スティック -->
         <div class="stick-area" id="p1-stick-area">
           <div class="stick-base">
             <div class="stick-knob" id="p1-stick-knob"></div>
           </div>
         </div>
-        <div class="action-btns">
-          <button class="action-btn btn-normal"
-            ontouchstart="Game.btnDown('p1','normal')" ontouchend="Game.btnUp('p1','normal')"
-            onmousedown="Game.btnDown('p1','normal')" onmouseup="Game.btnUp('p1','normal')">攻</button>
-          <button class="action-btn btn-mid"
-            ontouchstart="Game.btnDown('p1','mid')" ontouchend="Game.btnUp('p1','mid')"
-            onmousedown="Game.btnDown('p1','mid')" onmouseup="Game.btnUp('p1','mid')">中</button>
-          <button class="action-btn btn-special"
-            ontouchstart="Game.btnDown('p1','special')" ontouchend="Game.btnUp('p1','special')"
-            onmousedown="Game.btnDown('p1','special')" onmouseup="Game.btnUp('p1','special')">必殺</button>
+        <!-- 右: ボタン群 -->
+        <div class="btn-group">
+          <div class="btn-row-top">
+            <button class="action-btn btn-jump" id="p1-btn-jump">↑</button>
+            <button class="action-btn btn-special" id="p1-btn-special">必殺</button>
+          </div>
+          <div class="btn-row-bot">
+            <button class="action-btn btn-normal" id="p1-btn-normal">攻</button>
+            <button class="action-btn btn-mid" id="p1-btn-mid">中</button>
+          </div>
         </div>
       </div>
 
-      <!-- Controls P2 (2P mode only) -->
+      <!-- P2 コントロール（右下・2Pモード時のみ） -->
       <div class="controls p2-controls" id="p2-controls" style="display:none">
+        <div class="btn-group">
+          <div class="btn-row-top">
+            <button class="action-btn btn-special" id="p2-btn-special">必殺</button>
+            <button class="action-btn btn-jump" id="p2-btn-jump">↑</button>
+          </div>
+          <div class="btn-row-bot">
+            <button class="action-btn btn-mid" id="p2-btn-mid">中</button>
+            <button class="action-btn btn-normal" id="p2-btn-normal">攻</button>
+          </div>
+        </div>
         <div class="stick-area" id="p2-stick-area">
           <div class="stick-base">
             <div class="stick-knob" id="p2-stick-knob"></div>
           </div>
-        </div>
-        <div class="action-btns">
-          <button class="action-btn btn-normal"
-            ontouchstart="Game.btnDown('p2','normal')" ontouchend="Game.btnUp('p2','normal')"
-            onmousedown="Game.btnDown('p2','normal')" onmouseup="Game.btnUp('p2','normal')">攻</button>
-          <button class="action-btn btn-mid"
-            ontouchstart="Game.btnDown('p2','mid')" ontouchend="Game.btnUp('p2','mid')"
-            onmousedown="Game.btnDown('p2','mid')" onmouseup="Game.btnUp('p2','mid')">中</button>
-          <button class="action-btn btn-special"
-            ontouchstart="Game.btnDown('p2','special')" ontouchend="Game.btnUp('p2','special')"
-            onmousedown="Game.btnDown('p2','special')" onmouseup="Game.btnUp('p2','special')">必殺</button>
         </div>
       </div>
 
@@ -207,241 +204,6 @@
         <h2>PAUSE</h2>
         <button class="menu-btn" onclick="Game.togglePause()">再開</button>
         <button class="menu-btn" onclick="Game.showScreen('screen-title')">タイトルへ</button>
-      </div>
-    </div>
-  </div>
-
-  <script src="js/characters.js"></script>
-  <script src="js/stages.js"></script>
-  <script src="js/engine.js"></script>
-  <script src="js/game.js"></script>
-</body>
-</html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <title>BATTLE ARENA</title>
-  <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
-  <div id="app">
-    <!-- TITLE SCREEN -->
-    <div id="screen-title" class="screen active">
-      <div class="title-bg"></div>
-      <div class="title-content">
-        <div class="title-logo">
-          <span class="title-main">BATTLE</span>
-          <span class="title-sub">ARENA</span>
-        </div>
-        <div class="title-menu">
-          <button class="menu-btn" onclick="Game.showScreen('screen-mode')">
-            <span class="btn-icon">⚔️</span> ゲームスタート
-          </button>
-          <button class="menu-btn" onclick="Game.showScreen('screen-settings')">
-            <span class="btn-icon">⚙️</span> 設定
-          </button>
-        </div>
-        <div class="title-version">v0.1.1</div>
-      </div>
-    </div>
-
-    <!-- MODE SELECT -->
-    <div id="screen-mode" class="screen">
-      <div class="screen-header">
-        <button class="back-btn" onclick="Game.showScreen('screen-title')">◀ 戻る</button>
-        <h2>モード選択</h2>
-      </div>
-      <div class="mode-cards">
-        <div class="mode-card" onclick="Game.selectMode('vs-cpu')">
-          <div class="mode-icon">🤖</div>
-          <div class="mode-name">VS CPU</div>
-          <div class="mode-desc">コンピューターと対戦</div>
-        </div>
-        <div class="mode-card" onclick="Game.selectMode('vs-player')">
-          <div class="mode-icon">👥</div>
-          <div class="mode-name">2P対戦</div>
-          <div class="mode-desc">同じ端末で2人対戦</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- CHARACTER SELECT -->
-    <div id="screen-character" class="screen">
-      <div class="screen-header">
-        <button class="back-btn" onclick="Game.showScreen('screen-mode')">◀ 戻る</button>
-        <h2>キャラクター選択</h2>
-      </div>
-      <div class="char-select-area">
-        <div class="player-select" id="p1-select">
-          <div class="player-label p1-label">P1</div>
-          <div class="selected-char" id="p1-char-display"></div>
-        </div>
-        <div class="vs-text">VS</div>
-        <div class="player-select" id="p2-select">
-          <div class="player-label p2-label">P2</div>
-          <div class="selected-char" id="p2-char-display"></div>
-        </div>
-      </div>
-      <div class="char-grid" id="char-grid"></div>
-      <div class="char-select-footer">
-        <div class="selecting-indicator" id="selecting-indicator">P1 キャラを選択中...</div>
-        <button class="start-btn" id="start-fight-btn" onclick="Game.showScreen('screen-stage')" style="display:none">
-          ステージ選択へ ▶
-        </button>
-      </div>
-    </div>
-
-    <!-- STAGE SELECT -->
-    <div id="screen-stage" class="screen">
-      <div class="screen-header">
-        <button class="back-btn" onclick="Game.showScreen('screen-character')">◀ 戻る</button>
-        <h2>ステージ選択</h2>
-      </div>
-      <div class="stage-grid" id="stage-grid"></div>
-      <button class="start-btn" onclick="Game.startBattle()">バトル開始！ ⚔️</button>
-    </div>
-
-    <!-- BATTLE SCREEN -->
-    <div id="screen-battle" class="screen">
-      <div class="battle-hud">
-        <div class="hud-player p1-hud">
-          <div class="hud-name" id="p1-name">FIGHTER</div>
-          <div class="hp-bar-wrap">
-            <div class="hp-bar p1-hp" id="p1-hp-bar"></div>
-          </div>
-          <div class="hud-hp-text" id="p1-hp-text">100</div>
-        </div>
-        <div class="hud-center">
-          <div class="round-timer" id="round-timer">99</div>
-          <div class="round-label" id="round-label">ROUND 1</div>
-        </div>
-        <div class="hud-player p2-hud">
-          <div class="hud-name" id="p2-name">FIGHTER</div>
-          <div class="hp-bar-wrap">
-            <div class="hp-bar p2-hp" id="p2-hp-bar"></div>
-          </div>
-          <div class="hud-hp-text" id="p2-hp-text">100</div>
-        </div>
-      </div>
-
-      <canvas id="game-canvas"></canvas>
-
-      <!-- P1コントロール: スティック左・ボタン右 -->
-      <div class="controls p1-controls">
-        <div class="stick-area" id="p1-stick-area">
-          <div class="stick-base">
-            <div class="stick-knob" id="p1-stick-knob"></div>
-          </div>
-        </div>
-        <div class="action-btns">
-          <div class="action-row">
-            <button class="action-btn btn-special"
-              ontouchstart="Game.btnDown('p1','special');event.preventDefault()"
-              ontouchend="Game.btnUp('p1','special');event.preventDefault()">必殺</button>
-            <button class="action-btn btn-mid"
-              ontouchstart="Game.btnDown('p1','mid');event.preventDefault()"
-              ontouchend="Game.btnUp('p1','mid');event.preventDefault()">中</button>
-          </div>
-          <div class="action-row">
-            <button class="action-btn btn-jump"
-              ontouchstart="Game.btnDown('p1','jump');event.preventDefault()"
-              ontouchend="Game.btnUp('p1','jump');event.preventDefault()">↑</button>
-            <button class="action-btn btn-normal"
-              ontouchstart="Game.btnDown('p1','normal');event.preventDefault()"
-              ontouchend="Game.btnUp('p1','normal');event.preventDefault()">攻</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- P2コントロール: ボタン左・スティック右 -->
-      <div class="controls p2-controls" id="p2-controls" style="display:none">
-        <div class="action-btns">
-          <div class="action-row">
-            <button class="action-btn btn-mid p2-btn"
-              ontouchstart="Game.btnDown('p2','mid');event.preventDefault()"
-              ontouchend="Game.btnUp('p2','mid');event.preventDefault()">中</button>
-            <button class="action-btn btn-special p2-btn"
-              ontouchstart="Game.btnDown('p2','special');event.preventDefault()"
-              ontouchend="Game.btnUp('p2','special');event.preventDefault()">必殺</button>
-          </div>
-          <div class="action-row">
-            <button class="action-btn btn-normal p2-btn"
-              ontouchstart="Game.btnDown('p2','normal');event.preventDefault()"
-              ontouchend="Game.btnUp('p2','normal');event.preventDefault()">攻</button>
-            <button class="action-btn btn-jump p2-btn"
-              ontouchstart="Game.btnDown('p2','jump');event.preventDefault()"
-              ontouchend="Game.btnUp('p2','jump');event.preventDefault()">↑</button>
-          </div>
-        </div>
-        <div class="stick-area" id="p2-stick-area">
-          <div class="stick-base">
-            <div class="stick-knob" id="p2-stick-knob"></div>
-          </div>
-        </div>
-      </div>
-
-      <button class="pause-btn" onclick="Game.togglePause()">⏸</button>
-    </div>
-
-    <!-- SETTINGS SCREEN -->
-    <div id="screen-settings" class="screen">
-      <div class="screen-header">
-        <button class="back-btn" onclick="Game.showScreen('screen-title')">◀ 戻る</button>
-        <h2>設定</h2>
-      </div>
-      <div class="settings-content">
-        <div class="settings-section">
-          <div class="settings-label">CPU強さ</div>
-          <div class="settings-options">
-            <button class="setting-opt" onclick="Game.setSetting('cpu','easy')" id="cpu-easy">よわい</button>
-            <button class="setting-opt active" onclick="Game.setSetting('cpu','normal')" id="cpu-normal">ふつう</button>
-            <button class="setting-opt" onclick="Game.setSetting('cpu','hard')" id="cpu-hard">つよい</button>
-          </div>
-        </div>
-        <div class="settings-section">
-          <div class="settings-label">制限時間</div>
-          <div class="settings-options">
-            <button class="setting-opt" onclick="Game.setSetting('time',60)" id="time-60">60秒</button>
-            <button class="setting-opt active" onclick="Game.setSetting('time',99)" id="time-99">99秒</button>
-            <button class="setting-opt" onclick="Game.setSetting('time',999)" id="time-999">無制限</button>
-          </div>
-        </div>
-        <div class="settings-section">
-          <div class="settings-label">キーボード操作（PC）</div>
-          <div class="settings-info">P1: A/D移動　W or ↑ジャンプ　F攻撃　G中　H必殺</div>
-          <div class="settings-info">P2: ←/→移動　↑ジャンプ　J攻撃　K中　L必殺</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- RESULT SCREEN -->
-    <div id="screen-result" class="screen">
-      <div class="result-content">
-        <div class="result-title" id="result-title">WINNER!</div>
-        <div class="result-char" id="result-char"></div>
-        <div class="result-name" id="result-name"></div>
-        <div class="result-btns">
-          <button class="menu-btn" onclick="Game.rematch()">もう一度</button>
-          <button class="menu-btn" onclick="Game.showScreen('screen-title')">タイトルへ</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- PAUSE OVERLAY -->
-    <div id="pause-overlay" class="overlay" style="display:none">
-      <div class="pause-menu">
-        <h2>PAUSE</h2>
-        <button class="menu-btn" onclick="Game.togglePause()">再開</button>
-        <button class="menu-btn" onclick="Game.showScreen('screen-title')">タイトルへ</button>
-      </div>
-    </div>
-
-    <!-- 縦向き警告 -->
-    <div id="rotate-overlay" class="rotate-overlay">
-      <div class="rotate-content">
-        <div class="rotate-icon">📱➡️</div>
-        <div class="rotate-text">スマホを横向きにしてください</div>
       </div>
     </div>
   </div>
