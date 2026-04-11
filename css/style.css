@@ -124,9 +124,16 @@ html, body {
 }
 
 .title-menu {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px; width: min(420px, 90vw);
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 10px;
+  width: min(420px, 90vw);
+}
+.title-menu .menu-btn {
+  flex: none;
+  width: 100%;
+  font-size: 13px;
+  padding: 12px 8px;
 }
 
 .title-version {
