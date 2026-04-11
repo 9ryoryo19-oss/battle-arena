@@ -1376,3 +1376,68 @@ html, body {
   background: linear-gradient(90deg, var(--accent), #a855f7);
   border-radius: 4px; transition: width 0.8s ease-out;
 }
+
+/* ============ RANKING SCREEN ============ */
+#screen-ranking {
+  background: var(--bg-dark);
+  padding-top: 56px;
+  justify-content: flex-start;
+  overflow-y: auto;
+}
+.ranking-content {
+  display: flex; flex-direction: column;
+  gap: 12px; padding: 12px 16px;
+  width: 100%; max-width: 560px;
+}
+.ranking-tabs {
+  display: flex; gap: 0;
+  border: 1px solid var(--border); border-radius: 4px; overflow: hidden;
+}
+.ranking-tab {
+  flex: 1; padding: 10px 8px;
+  background: transparent; border: none;
+  color: var(--text-dim); font-size: 13px;
+  font-family: 'Noto Sans JP', sans-serif;
+  cursor: pointer; transition: all 0.15s;
+}
+.ranking-tab.active { background: var(--accent); color: #fff; font-weight: 700; }
+
+.ranking-list {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.ranking-loading {
+  text-align: center; color: var(--text-dim);
+  padding: 24px; font-size: 14px;
+}
+.ranking-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+}
+.ranking-row.top3 {
+  border-color: var(--gold);
+  background: rgba(255,215,0,0.06);
+}
+.ranking-row.my-row {
+  border-color: var(--p1-color);
+  background: rgba(0,212,255,0.08);
+}
+.rank-medal { font-size: 16px; min-width: 28px; text-align: center; font-family: 'Orbitron',sans-serif; font-weight: 700; color: var(--text-dim); }
+.rank-char  { font-size: 18px; min-width: 24px; }
+.rank-name  { flex: 1; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rank-lv    { font-size: 11px; color: var(--accent); font-family: 'Orbitron',sans-serif; min-width: 32px; }
+.rank-stat  { font-family: 'Orbitron',sans-serif; font-size: 13px; color: var(--gold); font-weight: 700; min-width: 48px; text-align: right; }
+.rank-battles { font-size: 11px; color: var(--text-dim); min-width: 36px; text-align: right; }
+
+.my-rank-card {
+  padding: 12px 16px;
+  background: rgba(0,212,255,0.08);
+  border: 1px solid var(--p1-color);
+  border-radius: 8px;
+}
+.my-rank-label { font-size: 11px; color: var(--text-dim); margin-bottom: 4px; }
+.my-rank-info  { font-size: 14px; font-weight: 700; }
+.my-rank-num   { font-family: 'Orbitron',sans-serif; font-size: 20px; color: var(--gold); margin-right: 8px; }

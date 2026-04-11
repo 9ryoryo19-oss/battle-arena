@@ -17,7 +17,7 @@ const Game = (() => {
     if (id === 'screen-character') initCharSelect();
     if (id === 'screen-stage') initStageSelect();
     if (id === 'screen-battle') initBattle();
-    if (id === 'screen-profile') loadProfileScreen();
+    if (id === 'screen-ranking') loadRankingScreen();
     if (id === 'screen-title') Auth.updateAuthUI ? Auth.updateAuthUI() : null;
   }
 
@@ -87,6 +87,68 @@ const Game = (() => {
       msg.textContent = 'エラー: ' + (e.message || '登録に失敗しました');
       msg.className = 'auth-msg error';
     }
+  }
+
+  let rankingData = [];
+  let rankingTab = 'wins';
+
+  async function loadRankingScreen() {
+    const list = document.getElementById('ranking-list');
+    list.innerHTML = '<div class="ranking-loading">読み込み中...</div>';
+    rankingData = await Auth.getRankings(50);
+    renderRanking();
+    // 自分の順位
+    const profile = Auth.getProfile();
+    if (profile && rankingData.length) {
+      const mine = rankingData.find(r => r.username === profile.username);
+      const myCard = document.getElementById('my-rank-card');
+      const myInfo = document.getElementById('my-rank-info');
+      if (mine) {
+        myCard.style.display = '';
+        myInfo.innerHTML = `<span class="my-rank-num">#${mine.rank}</span> ${mine.username} — LV${mine.level} / ${mine.total_wins}勝 / 勝率${mine.win_rate}%`;
+      }
+    }
+  }
+
+  function switchRankingTab(tab) {
+    rankingTab = tab;
+    document.querySelectorAll('.ranking-tab').forEach((b,i) => {
+      b.classList.toggle('active', ['wins','winrate','level'][i] === tab);
+    });
+    renderRanking();
+  }
+
+  function renderRanking() {
+    const list = document.getElementById('ranking-list');
+    if (!rankingData.length) { list.innerHTML = '<div class="ranking-loading">データがありません</div>'; return; }
+
+    let sorted = [...rankingData];
+    if (rankingTab === 'wins') sorted.sort((a,b) => b.total_wins - a.total_wins);
+    else if (rankingTab === 'winrate') sorted.sort((a,b) => b.win_rate - a.win_rate);
+    else if (rankingTab === 'level') sorted.sort((a,b) => b.level - a.level || b.total_wins - a.total_wins);
+
+    const myProfile = Auth.getProfile();
+    const medals = ['🥇','🥈','🥉'];
+    const charMap = {};
+    CHARACTERS.forEach(c => charMap[c.id] = c.icon);
+
+    list.innerHTML = sorted.slice(0, 20).map((r, i) => {
+      const rank = i + 1;
+      const isMe = myProfile && r.username === myProfile.username;
+      const medal = medals[i] || `#${rank}`;
+      const favIcon = charMap[r.favorite_char] || '⚔️';
+      const stat = rankingTab === 'wins' ? `${r.total_wins}勝`
+        : rankingTab === 'winrate' ? `${r.win_rate}%`
+        : `LV${r.level}`;
+      return `<div class="ranking-row ${isMe ? 'my-row' : ''} ${rank <= 3 ? 'top3' : ''}">
+        <span class="rank-medal">${medal}</span>
+        <span class="rank-char">${favIcon}</span>
+        <span class="rank-name">${r.username}${isMe ? ' 👈' : ''}</span>
+        <span class="rank-lv">LV${r.level}</span>
+        <span class="rank-stat">${stat}</span>
+        <span class="rank-battles">${r.total_battles}戦</span>
+      </div>`;
+    }).join('');
   }
 
   async function loadProfileScreen() {
@@ -382,4 +444,4 @@ const Game = (() => {
     Auth.init().catch(console.error);
   });
 
-  return { showScreen, selectMode, startBattle, showResult, rematch, togglePause, switchAuthTab, doLogin, doSignup };})();
+  return { showScreen, selectMode, startBattle, showResult, rematch, togglePause, switchAuthTab, doLogin, doSignup, switchRankingTab };})();

@@ -50,6 +50,9 @@
           <button class="menu-btn" onclick="Game.showScreen('screen-mode')">
             <span class="btn-icon">⚔️</span> スタート
           </button>
+          <button class="menu-btn" onclick="Game.showScreen('screen-ranking')">
+            <span class="btn-icon">🏆</span> ランキング
+          </button>
           <button class="menu-btn auth-logged-in" style="display:none" onclick="Game.showScreen('screen-profile')">
             <span class="btn-icon">📊</span> 戦績
           </button>
@@ -126,7 +129,30 @@
       </div>
     </div>
 
-    <!-- SETTINGS SCREEN -->
+    <!-- RANKING SCREEN -->
+    <div id="screen-ranking" class="screen">
+      <div class="screen-header">
+        <button class="back-btn" onclick="Game.showScreen('screen-title')">◀ 戻る</button>
+        <h2>🏆 グローバルランキング</h2>
+      </div>
+      <div class="ranking-content">
+        <div class="ranking-tabs">
+          <button class="ranking-tab active" onclick="Game.switchRankingTab('wins')">勝利数</button>
+          <button class="ranking-tab" onclick="Game.switchRankingTab('winrate')">勝率</button>
+          <button class="ranking-tab" onclick="Game.switchRankingTab('level')">レベル</button>
+        </div>
+        <div class="ranking-list" id="ranking-list">
+          <div class="ranking-loading">読み込み中...</div>
+        </div>
+        <!-- 自分の順位 -->
+        <div class="my-rank-card" id="my-rank-card" style="display:none">
+          <div class="my-rank-label">あなたの順位</div>
+          <div class="my-rank-info" id="my-rank-info"></div>
+        </div>
+      </div>
+    </div>
+
+    
     <div id="screen-settings" class="screen">
       <div class="screen-header">
         <button class="back-btn" onclick="Game.showScreen('screen-title')">◀ 戻る</button>
