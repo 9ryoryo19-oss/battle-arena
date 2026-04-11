@@ -55,17 +55,34 @@ const Game = (() => {
   }
 
   async function doSignup() {
-    const username = document.getElementById('signup-username').value;
-    const email = document.getElementById('signup-email').value;
+    const username = document.getElementById('signup-username').value.trim();
+    const email = document.getElementById('signup-email').value.trim();
     const password = document.getElementById('signup-password').value;
     const msg = document.getElementById('auth-msg');
-    if (!username || !email || !password) { msg.textContent = 'すべて入力してください'; msg.className = 'auth-msg error'; return; }
+    if (!username || !email || !password) {
+      msg.textContent = 'すべて入力してください';
+      msg.className = 'auth-msg error';
+      return;
+    }
+    if (password.length < 6) {
+      msg.textContent = 'パスワードは6文字以上にしてください';
+      msg.className = 'auth-msg error';
+      return;
+    }
     msg.textContent = '登録中...';
     msg.className = 'auth-msg';
     try {
-      await Auth.signUp(email, password, username);
-      msg.textContent = '登録完了！メールを確認してください。';
-      msg.className = 'auth-msg success';
+      const data = await Auth.signUp(email, password, username);
+      if (data.session) {
+        // メール確認不要 → すぐログイン
+        msg.textContent = '登録完了！ようこそ ' + username + ' さん！';
+        msg.className = 'auth-msg success';
+        setTimeout(() => showScreen('screen-title'), 1000);
+      } else {
+        // メール確認が必要
+        msg.textContent = '確認メールを送りました。メールのリンクをクリックしてからログインしてください。';
+        msg.className = 'auth-msg success';
+      }
     } catch(e) {
       msg.textContent = 'エラー: ' + (e.message || '登録に失敗しました');
       msg.className = 'auth-msg error';
@@ -365,5 +382,4 @@ const Game = (() => {
     Auth.init().catch(console.error);
   });
 
-  return { showScreen, selectMode, startBattle, showResult, rematch, togglePause, switchAuthTab, doLogin, doSignup };
-})();
+  return { showScreen, selectMode, startBattle, showResult, rematch, togglePause, switchAuthTab, doLogin, doSignup };})();

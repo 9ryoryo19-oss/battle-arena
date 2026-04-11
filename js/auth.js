@@ -55,13 +55,14 @@ const Auth = (() => {
   async function signUp(email, password, username) {
     const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) throw error;
-    if (data.user) {
-      // プロフィール作成
+
+    // メール確認が不要な場合はすぐにプロフィール作成
+    if (data.user && data.session) {
       const { error: pErr } = await supabase.from('battle_profiles').insert({
         id: data.user.id, username,
         level: 1, exp: 0, total_wins: 0, total_losses: 0, total_battles: 0,
       });
-      if (pErr) throw pErr;
+      if (pErr && pErr.code !== '23505') throw pErr; // 重複は無視
     }
     return data;
   }
