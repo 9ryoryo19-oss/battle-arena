@@ -16,6 +16,7 @@
   </div>
 
   <div id="app">
+
     <!-- TITLE SCREEN -->
     <div id="screen-title" class="screen active">
       <div class="title-bg"></div>
@@ -24,15 +25,104 @@
           <span class="title-main">BATTLE</span>
           <span class="title-sub">ARENA</span>
         </div>
+        <!-- ログイン済みプロフィール -->
+        <div class="title-profile auth-logged-in" style="display:none">
+          <div class="profile-badge">
+            <span class="profile-lv-label">LV</span>
+            <span class="profile-lv" id="profile-level">1</span>
+          </div>
+          <div class="profile-info">
+            <div class="profile-name" id="profile-name">プレイヤー</div>
+            <div class="profile-exp-wrap">
+              <div class="profile-exp-bar-bg">
+                <div class="profile-exp-bar" id="profile-exp-bar"></div>
+              </div>
+              <div class="profile-exp-text" id="profile-exp-text">0 / 100 EXP</div>
+            </div>
+            <div class="profile-stats">
+              <span>勝利: <b id="profile-wins">0</b></span>
+              <span>総戦: <b id="profile-battles">0</b></span>
+            </div>
+          </div>
+        </div>
+
         <div class="title-menu">
           <button class="menu-btn" onclick="Game.showScreen('screen-mode')">
             <span class="btn-icon">⚔️</span> スタート
+          </button>
+          <button class="menu-btn auth-logged-in" style="display:none" onclick="Game.showScreen('screen-profile')">
+            <span class="btn-icon">📊</span> 戦績
+          </button>
+          <button class="menu-btn auth-logged-out" onclick="Game.showScreen('screen-auth')">
+            <span class="btn-icon">👤</span> ログイン
           </button>
           <button class="menu-btn" onclick="Game.showScreen('screen-settings')">
             <span class="btn-icon">⚙️</span> 設定
           </button>
         </div>
-        <div class="title-version">v0.1.1</div>
+        <button class="menu-btn-small auth-logged-in" style="display:none" onclick="Auth.signOut()">ログアウト</button>
+        <div class="title-version">v0.2.0 Phase 3</div>
+      </div>
+    </div>
+
+    <!-- AUTH SCREEN -->
+    <div id="screen-auth" class="screen">
+      <div class="screen-header">
+        <button class="back-btn" onclick="Game.showScreen('screen-title')">◀ 戻る</button>
+        <h2 id="auth-title">ログイン</h2>
+      </div>
+      <div class="auth-content">
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tab-login" onclick="Game.switchAuthTab('login')">ログイン</button>
+          <button class="auth-tab" id="tab-signup" onclick="Game.switchAuthTab('signup')">新規登録</button>
+        </div>
+
+        <div id="auth-form-login" class="auth-form">
+          <input class="auth-input" id="login-email" type="email" placeholder="メールアドレス">
+          <input class="auth-input" id="login-password" type="password" placeholder="パスワード">
+          <button class="start-btn" onclick="Game.doLogin()">ログイン</button>
+        </div>
+
+        <div id="auth-form-signup" class="auth-form" style="display:none">
+          <input class="auth-input" id="signup-username" type="text" placeholder="ユーザー名">
+          <input class="auth-input" id="signup-email" type="email" placeholder="メールアドレス">
+          <input class="auth-input" id="signup-password" type="password" placeholder="パスワード（6文字以上）">
+          <button class="start-btn" onclick="Game.doSignup()">登録する</button>
+        </div>
+
+        <div class="auth-msg" id="auth-msg"></div>
+      </div>
+    </div>
+
+    <!-- PROFILE / 戦績 SCREEN -->
+    <div id="screen-profile" class="screen">
+      <div class="screen-header">
+        <button class="back-btn" onclick="Game.showScreen('screen-title')">◀ 戻る</button>
+        <h2>プロフィール・戦績</h2>
+      </div>
+      <div class="profile-content">
+        <div class="profile-header-card">
+          <div class="profile-badge large">
+            <span class="profile-lv-label">LV</span>
+            <span class="profile-lv" id="profile-level2">1</span>
+          </div>
+          <div>
+            <div class="profile-name large" id="profile-name2">-</div>
+            <div class="profile-exp-wrap">
+              <div class="profile-exp-bar-bg">
+                <div class="profile-exp-bar" id="profile-exp-bar2"></div>
+              </div>
+              <div class="profile-exp-text" id="profile-exp-text2">0 / 100 EXP</div>
+            </div>
+            <div class="profile-stats large">
+              <span>🏆 <b id="profile-wins2">0</b> 勝</span>
+              <span>💀 <b id="profile-losses2">0</b> 敗</span>
+              <span>⚔️ <b id="profile-battles2">0</b> 戦</span>
+            </div>
+          </div>
+        </div>
+        <div class="records-title">最近の戦績</div>
+        <div class="records-list" id="records-list">読み込み中...</div>
       </div>
     </div>
 
@@ -45,8 +135,7 @@
       <div class="settings-content">
         <div class="settings-item">
           <div class="settings-label">スマホ操作</div>
-          <div class="settings-value">左スティック: 移動 / ↑でジャンプ</div>
-          <div class="settings-value">右ボタン: ⬆攻・中・必殺 / ⬆ジャンプ</div>
+          <div class="settings-value">左スティック: 移動 / 右ボタン群: 攻撃・ジャンプ</div>
         </div>
         <div class="settings-item">
           <div class="settings-label">PC操作 P1</div>
@@ -117,13 +206,10 @@
 
     <!-- BATTLE SCREEN -->
     <div id="screen-battle" class="screen">
-      <!-- HUD -->
       <div class="battle-hud">
         <div class="hud-player p1-hud">
           <div class="hud-name" id="p1-name">P1</div>
-          <div class="hp-bar-wrap">
-            <div class="hp-bar p1-hp" id="p1-hp-bar"></div>
-          </div>
+          <div class="hp-bar-wrap"><div class="hp-bar p1-hp" id="p1-hp-bar"></div></div>
           <div class="hud-hp-text" id="p1-hp-text">100</div>
         </div>
         <div class="hud-center">
@@ -132,21 +218,16 @@
         </div>
         <div class="hud-player p2-hud">
           <div class="hud-name" id="p2-name">P2</div>
-          <div class="hp-bar-wrap">
-            <div class="hp-bar p2-hp" id="p2-hp-bar"></div>
-          </div>
+          <div class="hp-bar-wrap"><div class="hp-bar p2-hp" id="p2-hp-bar"></div></div>
           <div class="hud-hp-text" id="p2-hp-text">100</div>
         </div>
       </div>
 
       <canvas id="game-canvas"></canvas>
 
-      <!-- P1 コントロール: スティック=左端、ボタン=右端 -->
       <div class="ctrl-stick-left" id="p1-controls">
         <div class="stick-area" id="p1-stick-area">
-          <div class="stick-base">
-            <div class="stick-knob" id="p1-stick-knob"></div>
-          </div>
+          <div class="stick-base"><div class="stick-knob" id="p1-stick-knob"></div></div>
         </div>
       </div>
       <div class="ctrl-btns-right" id="p1-btn-area">
@@ -162,7 +243,6 @@
         </div>
       </div>
 
-      <!-- P2 コントロール（2Pモード時のみ） -->
       <div class="ctrl-btns-left" id="p2-controls" style="display:none">
         <div class="btn-group">
           <div class="btn-row-top">
@@ -175,13 +255,10 @@
           </div>
         </div>
         <div class="stick-area" id="p2-stick-area">
-          <div class="stick-base">
-            <div class="stick-knob" id="p2-stick-knob"></div>
-          </div>
+          <div class="stick-base"><div class="stick-knob" id="p2-stick-knob"></div></div>
         </div>
       </div>
 
-      <!-- Pause -->
       <button class="pause-btn" onclick="Game.togglePause()">⏸</button>
     </div>
 
@@ -191,6 +268,14 @@
         <div class="result-title" id="result-title">WINNER!</div>
         <div class="result-char" id="result-char"></div>
         <div class="result-name" id="result-name"></div>
+        <!-- EXP獲得表示 -->
+        <div class="result-exp" id="result-exp" style="display:none">
+          <div class="exp-earned" id="exp-earned">+50 EXP</div>
+          <div class="levelup-msg" id="levelup-msg" style="display:none">🎉 LEVEL UP!</div>
+          <div class="exp-bar-wrap">
+            <div class="exp-bar-fill" id="result-exp-bar"></div>
+          </div>
+        </div>
         <div class="result-btns">
           <button class="menu-btn" onclick="Game.rematch()">もう一度</button>
           <button class="menu-btn" onclick="Game.showScreen('screen-title')">タイトルへ</button>
@@ -212,6 +297,7 @@
   <script src="js/stages.js"></script>
   <script src="js/sfx.js"></script>
   <script src="js/engine.js"></script>
+  <script src="js/auth.js"></script>
   <script src="js/game.js"></script>
 </body>
 </html>
