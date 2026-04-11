@@ -424,19 +424,28 @@ html, body {
 }
 
 /* ============ CONTROLS ============ */
-.controls {
-  position: absolute; bottom: 0;
-  display: flex; align-items: center;
-  padding: 8px 10px; gap: 12px; z-index: 10;
-  height: 110px;
+/* スティック: 左下固定 */
+.ctrl-stick-left {
+  position: absolute; bottom: 0; left: 0;
+  padding: 10px; z-index: 10;
 }
-.p1-controls { left: 0; flex-direction: row; }
-.p2-controls { right: 0; flex-direction: row-reverse; }
+
+/* P1ボタン: 右下固定 */
+.ctrl-btns-right {
+  position: absolute; bottom: 0; right: 0;
+  padding: 10px; z-index: 10;
+}
+
+/* P2ボタン: 左下固定（2Pモード） */
+.ctrl-btns-left {
+  position: absolute; bottom: 0; left: 0;
+  padding: 10px; z-index: 10;
+  display: flex; flex-direction: row; gap: 10px; align-items: center;
+}
 
 .stick-area {
   width: 90px; height: 90px;
   display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
 }
 .stick-base {
   width: 80px; height: 80px;
@@ -457,11 +466,10 @@ html, body {
 
 /* ボタングループ */
 .btn-group {
-  display: flex; flex-direction: column;
-  gap: 6px;
+  display: flex; flex-direction: column; gap: 6px;
 }
 .btn-row-top, .btn-row-bot {
-  display: flex; gap: 6px; justify-content: center;
+  display: flex; gap: 6px; justify-content: flex-end;
 }
 
 .action-btn {
@@ -475,25 +483,25 @@ html, body {
 .action-btn:active { transform: scale(0.82); opacity: 0.8; }
 
 .btn-normal {
-  width: 50px; height: 50px; font-size: 13px;
+  width: 52px; height: 52px; font-size: 13px;
   background: rgba(0,212,255,0.25);
   border: 2px solid var(--p1-color);
   box-shadow: 0 0 10px rgba(0,212,255,0.3);
 }
 .btn-mid {
-  width: 50px; height: 50px; font-size: 12px;
+  width: 52px; height: 52px; font-size: 12px;
   background: rgba(255,215,0,0.2);
   border: 2px solid var(--gold);
   box-shadow: 0 0 8px rgba(255,215,0,0.25);
 }
 .btn-special {
-  width: 44px; height: 44px; font-size: 10px;
+  width: 46px; height: 46px; font-size: 10px;
   background: rgba(255,68,102,0.25);
   border: 2px solid var(--p2-color);
   box-shadow: 0 0 8px rgba(255,68,102,0.25);
 }
 .btn-jump {
-  width: 44px; height: 44px; font-size: 16px;
+  width: 46px; height: 46px; font-size: 18px;
   background: rgba(124,58,237,0.25);
   border: 2px solid var(--accent);
   box-shadow: 0 0 8px rgba(124,58,237,0.3);

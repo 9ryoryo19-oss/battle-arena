@@ -273,9 +273,8 @@ class Engine {
   resize() {
     const battle = document.getElementById('screen-battle');
     const hudH = 56;
-    const ctrlH = 110;
     this.canvas.width = battle.offsetWidth;
-    this.canvas.height = Math.max(battle.offsetHeight - hudH - ctrlH, 100);
+    this.canvas.height = battle.offsetHeight - hudH;
     this.canvas.style.top = hudH + 'px';
   }
 

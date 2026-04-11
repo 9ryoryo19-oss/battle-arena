@@ -141,15 +141,15 @@
 
       <canvas id="game-canvas"></canvas>
 
-      <!-- P1 コントロール（左下） -->
-      <div class="controls p1-controls" id="p1-controls">
-        <!-- 左: スティック -->
+      <!-- P1 コントロール: スティック=左端、ボタン=右端 -->
+      <div class="ctrl-stick-left" id="p1-controls">
         <div class="stick-area" id="p1-stick-area">
           <div class="stick-base">
             <div class="stick-knob" id="p1-stick-knob"></div>
           </div>
         </div>
-        <!-- 右: ボタン群 -->
+      </div>
+      <div class="ctrl-btns-right" id="p1-btn-area">
         <div class="btn-group">
           <div class="btn-row-top">
             <button class="action-btn btn-jump" id="p1-btn-jump">↑</button>
@@ -162,8 +162,8 @@
         </div>
       </div>
 
-      <!-- P2 コントロール（右下・2Pモード時のみ） -->
-      <div class="controls p2-controls" id="p2-controls" style="display:none">
+      <!-- P2 コントロール（2Pモード時のみ） -->
+      <div class="ctrl-btns-left" id="p2-controls" style="display:none">
         <div class="btn-group">
           <div class="btn-row-top">
             <button class="action-btn btn-special" id="p2-btn-special">必殺</button>
