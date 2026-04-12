@@ -200,20 +200,39 @@
         <button class="back-btn" onclick="Game.showScreen('screen-mode')">◀ 戻る</button>
         <h2>キャラクター選択</h2>
       </div>
-      <div class="char-select-area">
-        <div class="player-select">
-          <div class="player-label p1-label">P1</div>
-          <div class="selected-char" id="p1-char-display">?</div>
+
+      <!-- 上段: 選択中キャラ大表示 -->
+      <div class="char-select-top">
+        <!-- P1 -->
+        <div class="char-preview-panel p1-panel" id="p1-char-display">
+          <div class="char-preview-label p1-label">P1</div>
+          <canvas class="char-preview-canvas" id="p1-preview-canvas" width="110" height="130"></canvas>
+          <div class="char-preview-info">
+            <div class="char-preview-name" id="p1-char-display-name">?</div>
+            <div class="char-preview-type" id="p1-char-type"></div>
+          </div>
         </div>
-        <div class="vs-text">VS</div>
-        <div class="player-select">
-          <div class="player-label p2-label">P2</div>
-          <div class="selected-char" id="p2-char-display">?</div>
+
+        <div class="char-select-vs">
+          <div class="vs-text">VS</div>
+          <div class="selecting-indicator" id="selecting-indicator">選択中...</div>
+        </div>
+
+        <!-- P2 -->
+        <div class="char-preview-panel p2-panel" id="p2-char-display">
+          <div class="char-preview-label p2-label">P2</div>
+          <canvas class="char-preview-canvas" id="p2-preview-canvas" width="110" height="130"></canvas>
+          <div class="char-preview-info">
+            <div class="char-preview-name" id="p2-char-display-name">?</div>
+            <div class="char-preview-type" id="p2-char-type"></div>
+          </div>
         </div>
       </div>
+
+      <!-- 下段: キャラグリッド -->
       <div class="char-grid" id="char-grid"></div>
+
       <div class="char-select-footer">
-        <div class="selecting-indicator" id="selecting-indicator">キャラを選択中...</div>
         <button class="start-btn" id="start-fight-btn" onclick="Game.showScreen('screen-stage')" style="display:none">
           ステージ選択へ ▶
         </button>

@@ -630,3 +630,134 @@ button { cursor: pointer; font-family: var(--font-body); }
 .levelup-msg { font-family: var(--font-display); font-size: 14px; color: #fff; animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1); }
 .exp-bar-wrap { width: 150px; height: 7px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
 .exp-bar-fill { height: 100%; background: linear-gradient(90deg, var(--p2), var(--gold)); border-radius: 4px; transition: width 0.8s ease-out; }
+
+/* ============ CHAR SELECT REDESIGN ============ */
+#screen-character {
+  padding-top: 48px;
+  justify-content: flex-start;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.char-select-top {
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px; padding: 10px 12px 6px;
+  width: 100%; flex-shrink: 0;
+}
+
+.char-preview-panel {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 8px 10px;
+  background: var(--bg2);
+  border: 2px solid var(--border);
+  border-radius: var(--radius2);
+  min-width: min(130px, 28vw);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  position: relative; overflow: hidden;
+}
+.char-preview-panel::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  opacity: 0; transition: opacity 0.2s;
+}
+.char-preview-panel.p1-selected {
+  border-color: var(--p1);
+  box-shadow: 0 0 16px rgba(0,229,255,0.25), inset 0 0 20px rgba(0,229,255,0.04);
+}
+.char-preview-panel.p1-selected::before { background: var(--p1); opacity: 1; }
+.char-preview-panel.p2-selected {
+  border-color: var(--p2);
+  box-shadow: 0 0 16px rgba(255,51,85,0.25), inset 0 0 20px rgba(255,51,85,0.04);
+}
+.char-preview-panel.p2-selected::before { background: var(--p2); opacity: 1; }
+
+.char-preview-canvas {
+  image-rendering: pixelated;
+  display: block;
+}
+.char-preview-info { text-align: center; }
+.char-preview-name {
+  font-family: var(--font-display); font-size: 12px; color: #fff;
+  min-height: 16px;
+}
+.char-preview-type {
+  font-size: 10px; color: var(--text2);
+  margin-top: 2px;
+}
+.char-preview-label {
+  font-family: var(--font-display); font-size: 10px; font-weight: 700;
+  padding: 2px 10px; border-radius: 2px; letter-spacing: 0.1em;
+  align-self: flex-start;
+}
+
+.char-select-vs {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  flex-shrink: 0;
+}
+.selecting-indicator {
+  font-size: 10px; color: var(--text2); text-align: center;
+  max-width: 80px; line-height: 1.3;
+}
+
+/* キャラグリッド刷新 */
+.char-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 5px; padding: 0 10px;
+  width: 100%; max-width: 520px;
+  flex-shrink: 0;
+}
+
+.char-card {
+  aspect-ratio: unset;
+  padding: 4px 3px 5px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius2);
+  display: flex; flex-direction: column;
+  align-items: center; gap: 2px;
+  cursor: pointer; transition: all 0.12s;
+  position: relative; overflow: hidden;
+}
+.char-card::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 60%);
+  pointer-events: none;
+}
+.char-card:active { transform: scale(0.92); }
+.char-card:hover { border-color: var(--border2); background: var(--bg3); }
+.char-card.p1-selected {
+  border-color: var(--p1);
+  box-shadow: 0 0 10px rgba(0,229,255,0.3);
+  background: rgba(0,229,255,0.06);
+}
+.char-card.p2-selected {
+  border-color: var(--p2);
+  box-shadow: 0 0 10px rgba(255,51,85,0.3);
+  background: rgba(255,51,85,0.06);
+}
+
+.char-card-canvas {
+  display: block;
+  image-rendering: crisp-edges;
+  width: 100%; height: auto;
+}
+
+.char-type-badge {
+  font-size: 8px; font-weight: 700;
+  padding: 1px 5px; border-radius: 3px;
+  color: #fff; letter-spacing: 0.04em;
+  opacity: 0.9;
+}
+
+.char-card-name {
+  font-size: 9px; color: var(--text);
+  text-align: center; font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.char-select-footer {
+  display: flex; justify-content: center;
+  padding: 8px; flex-shrink: 0;
+}

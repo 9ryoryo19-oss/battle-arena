@@ -186,21 +186,113 @@ const Game = (() => {
     selectingPlayer = 'p1';
     const grid = document.getElementById('char-grid');
     grid.innerHTML = '';
+
     CHARACTERS.forEach(char => {
       const card = document.createElement('div');
       card.className = 'char-card';
       card.dataset.id = char.id;
-      card.innerHTML = `<div class="char-card-icon">${char.icon}</div><div class="char-card-name">${char.name}</div>`;
+
+      // Canvasプレビュー
+      const canvas = document.createElement('canvas');
+      canvas.width = 80; canvas.height = 90;
+      canvas.className = 'char-card-canvas';
+      const ctx = canvas.getContext('2d');
+      // キャラを描画（小さめに）
+      try {
+        char.sprite(ctx, 8, 2, 64, 82, 1, 'idle');
+      } catch(e) {
+        ctx.font = '36px serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(char.icon, 40, 52);
+      }
+
+      // タイプバッジ
+      const typeColors = { '格闘':'#ef4444','剣':'#22c55e','銃':'#f59e0b','重装':'#78716c','忍者':'#818cf8','魔法':'#a855f7','天使':'#fbbf24' };
+      const badge = document.createElement('div');
+      badge.className = 'char-type-badge';
+      badge.textContent = char.type;
+      badge.style.background = typeColors[char.type] || '#666';
+
+      const name = document.createElement('div');
+      name.className = 'char-card-name';
+      name.textContent = char.name;
+
+      card.appendChild(canvas);
+      card.appendChild(badge);
+      card.appendChild(name);
       card.addEventListener('click', () => selectChar(char));
+
+      // ホバーでプレビュー更新（アニメ）
+      card.addEventListener('mouseenter', () => updateCharPreview(char));
+      card.addEventListener('touchstart', () => updateCharPreview(char), { passive: true });
+
       grid.appendChild(card);
     });
-    document.getElementById('p1-char-display').textContent = '?';
-    document.getElementById('p2-char-display').textContent = '?';
+
+    // 選択中プレビューのCanvas初期化
+    initPreviewCanvas('p1-preview-canvas');
+    initPreviewCanvas('p2-preview-canvas');
+
+    document.getElementById('p1-char-display-name').textContent = '?';
+    document.getElementById('p2-char-display-name').textContent = '?';
     document.getElementById('p1-char-display').className = 'selected-char';
     document.getElementById('p2-char-display').className = 'selected-char';
     document.getElementById('start-fight-btn').style.display = 'none';
     document.getElementById('selecting-indicator').textContent =
       selectedMode === 'vs-cpu' ? 'あなたのキャラを選んでください' : 'P1 キャラを選択中...';
+
+    // アニメーションループ
+    startCharSelectAnimation();
+  }
+
+  let charSelectAnimFrame = null;
+  let hoveredChar = null;
+
+  function updateCharPreview(char) { hoveredChar = char; }
+
+  function initPreviewCanvas(id) {
+    const canvas = document.getElementById(id);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+    ctx.font = '32px serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('?', canvas.width/2, canvas.height/2 + 12);
+  }
+
+  function startCharSelectAnimation() {
+    if (charSelectAnimFrame) cancelAnimationFrame(charSelectAnimFrame);
+    // グリッドのプレビューをアニメ更新
+    const cards = document.querySelectorAll('.char-card');
+    cards.forEach(card => {
+      const char = CHARACTERS.find(c => c.id === card.dataset.id);
+      if (!char) return;
+      const canvas = card.querySelector('.char-card-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      try { char.sprite(ctx, 8, 2, 64, 82, 1, 'idle'); } catch(e) {}
+    });
+
+    // 選択中キャラの大きいプレビュー
+    const p1canvas = document.getElementById('p1-preview-canvas');
+    const p2canvas = document.getElementById('p2-preview-canvas');
+    if (p1canvas && selectedChars.p1) {
+      const ctx = p1canvas.getContext('2d');
+      ctx.clearRect(0, 0, p1canvas.width, p1canvas.height);
+      try { selectedChars.p1.sprite(ctx, 10, 5, p1canvas.width-20, p1canvas.height-10, 1, 'idle'); } catch(e) {}
+    }
+    if (p2canvas && selectedChars.p2) {
+      const ctx = p2canvas.getContext('2d');
+      ctx.clearRect(0, 0, p2canvas.width, p2canvas.height);
+      try { selectedChars.p2.sprite(ctx, 10, 5, p2canvas.width-20, p2canvas.height-10, -1, 'idle'); } catch(e) {}
+    }
+
+    const screen = document.getElementById('screen-character');
+    if (screen && screen.classList.contains('active')) {
+      charSelectAnimFrame = requestAnimationFrame(startCharSelectAnimation);
+    }
   }
 
   function selectChar(char) {
@@ -208,29 +300,44 @@ const Game = (() => {
       selectedChars.p1 = char;
       const others = CHARACTERS.filter(c => c.id !== char.id);
       selectedChars.p2 = others[Math.floor(Math.random() * others.length)];
-      document.getElementById('p1-char-display').textContent = char.icon;
-      document.getElementById('p1-char-display').className = 'selected-char p1-selected';
-      document.getElementById('p2-char-display').textContent = selectedChars.p2.icon;
-      document.getElementById('p2-char-display').className = 'selected-char p2-selected';
+      updateSelectedDisplay();
       document.getElementById('start-fight-btn').style.display = 'block';
       document.getElementById('selecting-indicator').textContent = 'P1選択完了！';
+      document.querySelectorAll('.char-card').forEach(c => {
+        c.classList.toggle('p1-selected', c.dataset.id === char.id);
+      });
     } else {
       if (selectingPlayer === 'p1') {
         selectedChars.p1 = char;
-        document.getElementById('p1-char-display').textContent = char.icon;
-        document.getElementById('p1-char-display').className = 'selected-char p1-selected';
+        updateSelectedDisplay();
         document.querySelectorAll('.char-card').forEach(c => c.classList.remove('p1-selected'));
         document.querySelector(`.char-card[data-id="${char.id}"]`).classList.add('p1-selected');
         selectingPlayer = 'p2';
         document.getElementById('selecting-indicator').textContent = 'P2 キャラを選択中...';
+        document.getElementById('p1-char-display').className = 'selected-char p1-selected';
       } else {
         selectedChars.p2 = char;
-        document.getElementById('p2-char-display').textContent = char.icon;
-        document.getElementById('p2-char-display').className = 'selected-char p2-selected';
+        updateSelectedDisplay();
         document.querySelector(`.char-card[data-id="${char.id}"]`).classList.add('p2-selected');
         document.getElementById('start-fight-btn').style.display = 'block';
         document.getElementById('selecting-indicator').textContent = '両プレイヤー選択完了！';
+        document.getElementById('p2-char-display').className = 'selected-char p2-selected';
       }
+    }
+  }
+
+  function updateSelectedDisplay() {
+    if (selectedChars.p1) {
+      document.getElementById('p1-char-display').className = 'selected-char p1-selected';
+      document.getElementById('p1-char-display-name').textContent = selectedChars.p1.name;
+      document.getElementById('p1-char-type').textContent = selectedChars.p1.type;
+      document.getElementById('p1-name').textContent = selectedChars.p1.name;
+    }
+    if (selectedChars.p2) {
+      document.getElementById('p2-char-display').className = 'selected-char p2-selected';
+      document.getElementById('p2-char-display-name').textContent = selectedChars.p2.name;
+      document.getElementById('p2-char-type').textContent = selectedChars.p2.type;
+      document.getElementById('p2-name').textContent = selectedChars.p2.name;
     }
   }
 
