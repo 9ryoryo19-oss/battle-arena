@@ -592,7 +592,6 @@ button { cursor: pointer; font-family: var(--font-body); }
   justify-content: flex-start;
   overflow: hidden;
   background: var(--bg);
-  display: flex;
   flex-direction: column;
 }
 
