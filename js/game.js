@@ -192,19 +192,10 @@ const Game = (() => {
       card.className = 'char-card';
       card.dataset.id = char.id;
 
-      // Canvasプレビュー
+      // Canvasプレビュー（DOM追加後に描画）
       const canvas = document.createElement('canvas');
-      canvas.width = 80; canvas.height = 90;
+      canvas.width = 80; canvas.height = 88;
       canvas.className = 'char-card-canvas';
-      const ctx = canvas.getContext('2d');
-      // キャラを描画（小さめに）
-      try {
-        char.sprite(ctx, 8, 2, 64, 82, 1, 'idle');
-      } catch(e) {
-        ctx.font = '36px serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(char.icon, 40, 52);
-      }
 
       // タイプバッジ
       const typeColors = { '格闘':'#ef4444','剣':'#22c55e','銃':'#f59e0b','重装':'#78716c','忍者':'#818cf8','魔法':'#a855f7','天使':'#fbbf24' };
@@ -227,6 +218,15 @@ const Game = (() => {
       card.addEventListener('touchstart', () => updateCharPreview(char), { passive: true });
 
       grid.appendChild(card);
+
+      // DOM追加後に描画（非同期で確実に）
+      requestAnimationFrame(() => {
+        const ctx = canvas.getContext('2d');
+        try { char.sprite(ctx, 8, 2, 64, 84, 1, 'idle'); } catch(e) {
+          ctx.font = '32px serif'; ctx.textAlign = 'center';
+          ctx.fillText(char.icon, 40, 52);
+        }
+      });
     });
 
     // 選択中プレビューのCanvas初期化
@@ -263,36 +263,27 @@ const Game = (() => {
 
   function startCharSelectAnimation() {
     if (charSelectAnimFrame) cancelAnimationFrame(charSelectAnimFrame);
-    // グリッドのプレビューをアニメ更新
-    const cards = document.querySelectorAll('.char-card');
-    cards.forEach(card => {
-      const char = CHARACTERS.find(c => c.id === card.dataset.id);
-      if (!char) return;
-      const canvas = card.querySelector('.char-card-canvas');
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      try { char.sprite(ctx, 8, 2, 64, 82, 1, 'idle'); } catch(e) {}
-    });
 
-    // 選択中キャラの大きいプレビュー
-    const p1canvas = document.getElementById('p1-preview-canvas');
-    const p2canvas = document.getElementById('p2-preview-canvas');
-    if (p1canvas && selectedChars.p1) {
-      const ctx = p1canvas.getContext('2d');
-      ctx.clearRect(0, 0, p1canvas.width, p1canvas.height);
-      try { selectedChars.p1.sprite(ctx, 10, 5, p1canvas.width-20, p1canvas.height-10, 1, 'idle'); } catch(e) {}
+    function loop() {
+      // 選択中キャラの大きいプレビューのみ毎フレーム更新
+      const p1canvas = document.getElementById('p1-preview-canvas');
+      const p2canvas = document.getElementById('p2-preview-canvas');
+      if (p1canvas && selectedChars.p1) {
+        const ctx = p1canvas.getContext('2d');
+        ctx.clearRect(0, 0, p1canvas.width, p1canvas.height);
+        try { selectedChars.p1.sprite(ctx, 8, 2, p1canvas.width-16, p1canvas.height-6, 1, 'idle'); } catch(e) {}
+      }
+      if (p2canvas && selectedChars.p2) {
+        const ctx = p2canvas.getContext('2d');
+        ctx.clearRect(0, 0, p2canvas.width, p2canvas.height);
+        try { selectedChars.p2.sprite(ctx, 8, 2, p2canvas.width-16, p2canvas.height-6, -1, 'idle'); } catch(e) {}
+      }
+      const screen = document.getElementById('screen-character');
+      if (screen && screen.classList.contains('active')) {
+        charSelectAnimFrame = requestAnimationFrame(loop);
+      }
     }
-    if (p2canvas && selectedChars.p2) {
-      const ctx = p2canvas.getContext('2d');
-      ctx.clearRect(0, 0, p2canvas.width, p2canvas.height);
-      try { selectedChars.p2.sprite(ctx, 10, 5, p2canvas.width-20, p2canvas.height-10, -1, 'idle'); } catch(e) {}
-    }
-
-    const screen = document.getElementById('screen-character');
-    if (screen && screen.classList.contains('active')) {
-      charSelectAnimFrame = requestAnimationFrame(startCharSelectAnimation);
-    }
+    loop();
   }
 
   function selectChar(char) {

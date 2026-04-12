@@ -255,58 +255,13 @@ button { cursor: pointer; font-family: var(--font-body); }
 .mode-desc { font-size: 11px; color: var(--text2); }
 
 /* ===== CHARACTER SELECT ===== */
-#screen-character {
-  background: var(--bg);
-  padding-top: 48px; justify-content: flex-start; overflow-y: auto;
-}
-.char-select-area {
-  display: flex; align-items: center; justify-content: center;
-  gap: 20px; padding: 14px 20px; width: 100%;
-}
-.player-select { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.player-label {
-  font-family: var(--font-display); font-size: 11px; font-weight: 700;
-  padding: 3px 14px; border-radius: 2px; letter-spacing: 0.1em;
-}
-.p1-label { background: var(--p1); color: #000; }
-.p2-label { background: var(--p2); color: #fff; }
-.selected-char {
-  width: min(90px, 20vw); height: min(90px, 20vw);
-  background: var(--bg2); border: 2px solid var(--border2);
-  border-radius: var(--radius2);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 40px; transition: border-color 0.2s;
-}
-.selected-char.p1-selected { border-color: var(--p1); box-shadow: var(--glow-p1); }
-.selected-char.p2-selected { border-color: var(--p2); box-shadow: var(--glow-p2); }
+/* → 下部の CHAR SELECT REDESIGN セクションで定義 */
 .vs-text {
   font-family: var(--font-display); font-size: 24px;
   color: var(--gold); text-shadow: var(--glow-gold);
 }
-
-.char-grid {
-  display: grid; grid-template-columns: repeat(5, 1fr);
-  gap: 6px; padding: 0 12px;
-  width: 100%; max-width: 480px;
-}
-.char-card {
-  aspect-ratio: 1;
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: var(--radius2);
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  transition: all 0.12s; padding: 4px;
-}
-.char-card:active { transform: scale(0.9); }
-.char-card.p1-selected { border-color: var(--p1); box-shadow: 0 0 12px rgba(0,229,255,0.35); }
-.char-card.p2-selected { border-color: var(--p2); box-shadow: 0 0 12px rgba(255,51,85,0.35); }
-.char-card-icon { font-size: clamp(18px, 5vw, 28px); }
-.char-card-name { font-size: 8px; color: var(--text2); margin-top: 3px; text-align: center; }
-.char-select-footer {
-  display: flex; flex-direction: column; align-items: center;
-  gap: 8px; padding: 10px;
-}
-.selecting-indicator { font-size: 12px; color: var(--text2); }
+.p1-label { background: var(--p1); color: #000; }
+.p2-label { background: var(--p2); color: #fff; }
 
 /* ===== STAGE SELECT ===== */
 #screen-stage {
