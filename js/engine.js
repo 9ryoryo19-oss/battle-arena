@@ -43,8 +43,12 @@ class Fighter {
     this.hurtTimer = attackType === 'special' ? 28 : 18;
     this.hitstopTimer = attackType === 'special' ? 10 : attackType === 'mid' ? 5 : 3;
     this.flashTimer = 10;
+    if (this.hp <= 0) {
+      this.hp = 0;
+      this.state = 'dead';
+      return true;
+    }
     this.state = 'hurt';
-    if (this.hp <= 0) { this.state = 'dead'; return true; }
     return false;
   }
 
@@ -447,7 +451,19 @@ class Engine {
 
   endRound() {
     if (this.timerInterval) clearInterval(this.timerInterval);
-    const winner=this.p1.hp<=0?this.p2:(this.p2.hp<=0?this.p1:(this.p1.hp>=this.p2.hp?this.p1:this.p2));
+    let winner;
+    if (this.p1.state === 'dead' && this.p2.state !== 'dead') {
+      winner = this.p2;
+    } else if (this.p2.state === 'dead' && this.p1.state !== 'dead') {
+      winner = this.p1;
+    } else if (this.p1.hp <= 0 && this.p2.hp > 0) {
+      winner = this.p2;
+    } else if (this.p2.hp <= 0 && this.p1.hp > 0) {
+      winner = this.p1;
+    } else {
+      // タイムアップ: HPが多い方が勝ち
+      winner = this.p1.hp >= this.p2.hp ? this.p1 : this.p2;
+    }
     Game.showResult(winner);
   }
 }
