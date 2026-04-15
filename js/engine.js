@@ -78,28 +78,50 @@ class Fighter {
       this.startAttack(this.attackQueue.shift());
     }
 
-    // 移動
+
+    // 移動（加速度ベース・スムーズ）
     if (this.state !== 'hurt') {
       const spd = this.char.speed;
+      const accel = this.onGround ? 0.55 : 0.3; // 地上/空中加速度
+      const friction = this.onGround ? 0.78 : 0.92; // 地上/空中摩擦
+
       if (this.state !== 'attack') {
-        if (this.input.left) { this.vx = -spd; if (this.onGround) this.state = 'walk'; }
-        else if (this.input.right) { this.vx = spd; if (this.onGround) this.state = 'walk'; }
-        else { this.vx *= 0.65; if (Math.abs(this.vx) < 0.3) this.vx = 0; if (this.onGround) this.state = 'idle'; }
+        if (this.input.left) {
+          this.vx = Math.max(this.vx - accel, -spd);
+          if (this.onGround) this.state = 'walk';
+        } else if (this.input.right) {
+          this.vx = Math.min(this.vx + accel, spd);
+          if (this.onGround) this.state = 'walk';
+        } else {
+          this.vx *= friction;
+          if (Math.abs(this.vx) < 0.15) { this.vx = 0; if (this.onGround) this.state = 'idle'; }
+        }
       } else {
-        this.vx *= 0.8;
+        this.vx *= 0.85;
         if (this.stateTimer > 0) { this.stateTimer--; if (this.stateTimer <= 0) { this.state = 'idle'; this.currentAttack = null; } }
       }
+
+      // ジャンプ（二段ジャンプ対応）
       const jumpJust = this.input.jump && !this.prevJump;
-      if (jumpJust && this.onGround) {
-        this.vy = -this.char.jumpPower;
-        this.onGround = false;
-        this.state = 'jump';
-        SFX.play('jump');
+      if (jumpJust) {
+        if (this.onGround) {
+          this.vy = -this.char.jumpPower;
+          this.onGround = false;
+          this.state = 'jump';
+          this.doubleJumpUsed = false;
+          SFX.play('jump');
+        } else if (!this.doubleJumpUsed) {
+          this.vy = -this.char.jumpPower * 0.85;
+          this.doubleJumpUsed = true;
+          SFX.play('jump');
+        }
       }
     }
     this.prevJump = this.input.jump;
 
-    this.vy += 0.65;
+    // 重力（可変：上昇中は軽く、落下中は重く）
+    const gravity = this.vy < 0 ? 0.5 : 0.75;
+    this.vy = Math.min(this.vy + gravity, 18); // 落下速度上限
     this.x += this.vx;
     this.y += this.vy;
     this.x = Math.max(0, Math.min(canvasW - this.w, this.x));
@@ -108,6 +130,7 @@ class Fighter {
     const gy = stage.platform.y * canvasH;
     if (this.bottom >= gy && this.vy >= 0) {
       this.y = gy - this.h; this.vy = 0; this.onGround = true;
+      this.doubleJumpUsed = false;
       if (this.state === 'jump') this.state = 'idle';
     }
     if (stage.platforms) {
@@ -115,11 +138,30 @@ class Fighter {
         const px = p.x*canvasW, py = p.y*canvasH, pw = p.w*canvasW;
         if (this.bottom >= py && this.bottom <= py+24 && this.x+this.w > px && this.x < px+pw && this.vy >= 0) {
           this.y = py-this.h; this.vy = 0; this.onGround = true;
+          this.doubleJumpUsed = false;
           if (this.state === 'jump') this.state = 'idle';
         }
       });
     }
-    if (this.y > canvasH+100) { this.hp = 0; this.state = 'dead'; }
+
+    // 落下死（乱闘モードでは復活、通常は死亡）
+    if (this.y > canvasH + 100) {
+      if (this.stocks !== undefined && this.stocks > 0) {
+        this.stocks--;
+        this.hp = this.maxHp;
+        this.state = 'idle';
+        this.vx = 0; this.vy = 0;
+        this.x = canvasW * (this.isP2 ? 0.75 : 0.2);
+        this.y = gy - this.h - 100;
+        this.flashTimer = 60; // 無敵点滅
+        this.invincible = 60;
+      } else {
+        this.hp = 0; this.state = 'dead';
+      }
+    }
+
+    // 無敵タイマー
+    if (this.invincible > 0) this.invincible--;
 
     this.projectiles = this.projectiles.filter(p => { p.x += p.vx; p.life--; return p.life > 0 && p.x > -50 && p.x < canvasW+50; });
   }
@@ -198,6 +240,16 @@ class Engine {
     this.running=false; this.paused=false;
     this.timer=99; this.timerInterval=null; this.animFrame=null;
     this.hitEffects=[]; this.cpuTimer=0; this.ended=false;
+
+    // 乱闘モード
+    this.isBrawl = mode === 'brawl';
+    if (this.isBrawl) {
+      this.p1.stocks = 3; this.p1.hp = this.p1.maxHp;
+      this.p2.stocks = 3; this.p2.hp = this.p2.maxHp;
+      this.p1.invincible = 0; this.p2.invincible = 0;
+      this.p1.doubleJumpUsed = false; this.p2.doubleJumpUsed = false;
+      this.timer = 180; // 3分
+    }
 
     // Phase 2: 演出
     this.screenFlash = { active: false, color: '#fff', alpha: 0, timer: 0 };
@@ -284,8 +336,9 @@ class Engine {
     } else { this.shakeX=0; this.shakeY=0; }
 
     this.updateHUD();
-
-    if (!this.ended && (this.p1.state==='dead'||this.p2.state==='dead')) {
+    if (this.isBrawl) {
+      this.checkBrawlEnd();
+    } else if (!this.ended && (this.p1.state==='dead'||this.p2.state==='dead')) {
       this.ended=true;
       this.showAnnouncement('K.O.!', '#ff4466', 2.5);
       this.triggerScreenFlash('#ff0000', 25);
@@ -298,6 +351,7 @@ class Engine {
   checkMeleeHit(attacker, defender) {
     const hb=attacker.getHitbox();
     if (!hb) return;
+    if (defender.invincible > 0) return; // 無敵中はスキップ
     const d=defender;
     if (hb.x<d.x+d.w && hb.x+hb.w>d.x && hb.y<d.y+d.h && hb.y+hb.h>d.y && d.state!=='dead') {
       const killed=defender.takeDamage(hb.damage,hb.knockback,attacker.dir,hb.type);
@@ -319,6 +373,7 @@ class Engine {
   checkProjectileHits(attacker, defender) {
     attacker.projectiles.forEach(p => {
       if (p.hit) return;
+      if (defender.invincible > 0) return; // 無敵中はスキップ
       const dx=p.x-(defender.x+defender.w/2), dy=p.y-(defender.y+defender.h/2);
       if (Math.sqrt(dx*dx+dy*dy)<p.r+defender.w/2 && defender.state!=='dead') {
         p.hit=true; p.life=0;
@@ -340,6 +395,28 @@ class Engine {
     document.getElementById('p2-hp-bar').style.width=(this.p2.hp/this.p2.maxHp*100)+'%';
     document.getElementById('p1-hp-text').textContent=Math.ceil(this.p1.hp);
     document.getElementById('p2-hp-text').textContent=Math.ceil(this.p2.hp);
+
+    // 乱闘モード: ストック表示
+    if (this.isBrawl) {
+      const p1stocks = document.getElementById('p1-stocks');
+      const p2stocks = document.getElementById('p2-stocks');
+      if (p1stocks) p1stocks.textContent = '❤️'.repeat(Math.max(0, this.p1.stocks));
+      if (p2stocks) p2stocks.textContent = '❤️'.repeat(Math.max(0, this.p2.stocks));
+    }
+  }
+
+  checkBrawlEnd() {
+    if (!this.isBrawl) return;
+    const p1dead = this.p1.stocks <= 0 && this.p1.state === 'dead';
+    const p2dead = this.p2.stocks <= 0 && this.p2.state === 'dead';
+    if (!this.ended && (p1dead || p2dead || this.timer <= 0)) {
+      this.ended = true;
+      const winner = p1dead ? this.p2 : (p2dead ? this.p1 : (this.p1.hp >= this.p2.hp ? this.p1 : this.p2));
+      this.showAnnouncement('K.O.!', '#ff4466', 2.5);
+      this.triggerScreenFlash('#ff0000', 25);
+      SFX.play('ko');
+      setTimeout(() => this.endRound(winner), 1600);
+    }
   }
 
   updateCPU() {
@@ -449,20 +526,15 @@ class Engine {
     }
   }
 
-  endRound() {
+  endRound(forcedWinner) {
     if (this.timerInterval) clearInterval(this.timerInterval);
-    let winner;
-    if (this.p1.state === 'dead' && this.p2.state !== 'dead') {
-      winner = this.p2;
-    } else if (this.p2.state === 'dead' && this.p1.state !== 'dead') {
-      winner = this.p1;
-    } else if (this.p1.hp <= 0 && this.p2.hp > 0) {
-      winner = this.p2;
-    } else if (this.p2.hp <= 0 && this.p1.hp > 0) {
-      winner = this.p1;
-    } else {
-      // タイムアップ: HPが多い方が勝ち
-      winner = this.p1.hp >= this.p2.hp ? this.p1 : this.p2;
+    let winner = forcedWinner;
+    if (!winner) {
+      if (this.p1.state === 'dead' && this.p2.state !== 'dead') winner = this.p2;
+      else if (this.p2.state === 'dead' && this.p1.state !== 'dead') winner = this.p1;
+      else if (this.p1.hp <= 0 && this.p2.hp > 0) winner = this.p2;
+      else if (this.p2.hp <= 0 && this.p1.hp > 0) winner = this.p1;
+      else winner = this.p1.hp >= this.p2.hp ? this.p1 : this.p2;
     }
     Game.showResult(winner);
   }

@@ -693,3 +693,47 @@ button { cursor: pointer; font-family: var(--font-body); }
   display: flex; justify-content: center; align-items: center;
   padding: 6px; flex-shrink: 0; min-height: 50px;
 }
+
+/* ===== BRAWL MODE & STOCKS ===== */
+.hud-stocks {
+  font-size: 10px; min-height: 12px;
+  letter-spacing: 1px;
+}
+.mode-cards {
+  flex-wrap: wrap;
+}
+.mode-card:nth-child(3) {
+  border-top: 2px solid #ff4466;
+}
+.mode-card:nth-child(3) .mode-icon::after {
+  content: '';
+}
+
+/* ===== COMBO GUIDE ===== */
+.combo-guide {
+  position: absolute;
+  top: 62px; left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.75);
+  border: 1px solid rgba(255,201,64,0.4);
+  border-radius: var(--radius2);
+  padding: 8px 14px;
+  z-index: 15;
+  backdrop-filter: blur(4px);
+  text-align: center;
+  pointer-events: none;
+  animation: fadeOut 0.5s 4.5s forwards;
+}
+@keyframes fadeOut { to { opacity: 0; } }
+.combo-guide-title {
+  font-family: var(--font-display);
+  font-size: 10px; color: var(--gold);
+  letter-spacing: 0.1em; margin-bottom: 4px;
+}
+.combo-item {
+  font-size: 11px; color: var(--text2);
+  padding: 2px 0;
+}
+.combo-item + .combo-item {
+  border-top: 1px solid rgba(255,255,255,0.05);
+}

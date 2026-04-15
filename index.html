@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <title>BATTLE ARENA</title>
-  <link rel="stylesheet" href="css/style.css?v=23">
+  <link rel="stylesheet" href="css/style.css?v=24">
 </head>
 <body>
 
@@ -191,6 +191,11 @@
           <div class="mode-name">2P対戦</div>
           <div class="mode-desc">同じ端末で2人対戦</div>
         </div>
+        <div class="mode-card" onclick="Game.selectMode('brawl')">
+          <div class="mode-icon">💥</div>
+          <div class="mode-name">乱闘</div>
+          <div class="mode-desc">残機3・何度でも復活！</div>
+        </div>
       </div>
     </div>
 
@@ -256,6 +261,7 @@
           <div class="hud-name" id="p1-name">P1</div>
           <div class="hp-bar-wrap"><div class="hp-bar p1-hp" id="p1-hp-bar"></div></div>
           <div class="hud-hp-text" id="p1-hp-text">100</div>
+          <div class="hud-stocks" id="p1-stocks"></div>
         </div>
         <div class="hud-center">
           <div class="round-timer" id="round-timer">99</div>
@@ -265,7 +271,16 @@
           <div class="hud-name" id="p2-name">P2</div>
           <div class="hp-bar-wrap"><div class="hp-bar p2-hp" id="p2-hp-bar"></div></div>
           <div class="hud-hp-text" id="p2-hp-text">100</div>
+          <div class="hud-stocks" id="p2-stocks"></div>
         </div>
+      </div>
+
+      <!-- コンボガイド -->
+      <div class="combo-guide" id="combo-guide">
+        <div class="combo-guide-title">コンボ</div>
+        <div class="combo-item">攻 → 中 → 必殺</div>
+        <div class="combo-item">攻 → 攻 → 中</div>
+        <div class="combo-item">ジャンプ → 攻 → 必殺</div>
       </div>
 
       <canvas id="game-canvas"></canvas>
@@ -338,11 +353,11 @@
     </div>
   </div>
 
-  <script src="js/characters.js?v=23"></script>
-  <script src="js/stages.js?v=23"></script>
-  <script src="js/sfx.js?v=23"></script>
-  <script src="js/engine.js?v=23"></script>
-  <script src="js/auth.js?v=23"></script>
-  <script src="js/game.js?v=23"></script>
+  <script src="js/characters.js?v=24"></script>
+  <script src="js/stages.js?v=24"></script>
+  <script src="js/sfx.js?v=24"></script>
+  <script src="js/engine.js?v=24"></script>
+  <script src="js/auth.js?v=24"></script>
+  <script src="js/game.js?v=24"></script>
 </body>
 </html>
