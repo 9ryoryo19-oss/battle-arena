@@ -232,24 +232,49 @@ class Engine {
     this.resize();
 
     const w=this.canvas.width, h=this.canvas.height;
-    this.p1 = new Fighter(p1char, w*0.2, false);
-    this.p2 = new Fighter(p2char, w*0.75, true);
-    this.p1.y = h*stage.platform.y-this.p1.h;
-    this.p2.y = h*stage.platform.y-this.p2.h;
+    const gy = h * stage.platform.y;
+
+    this.isBrawl = mode === 'brawl';
+
+    // P1は常に人間操作
+    this.p1 = new Fighter(p1char, w*0.15, false);
+    this.p1.y = gy - this.p1.h;
+
+    if (this.isBrawl) {
+      // 乱闘: CPU敵を4体生成（ランダムキャラ）
+      this.p2 = null;
+      this.enemies = [];
+      const enemyCount = 4;
+      const spawnXs = [0.3, 0.5, 0.65, 0.82];
+      for (let i = 0; i < enemyCount; i++) {
+        const charPool = CHARACTERS.filter(c => c.id !== p1char.id);
+        const char = charPool[Math.floor(Math.random() * charPool.length)];
+        const e = new Fighter(char, w * spawnXs[i], true);
+        e.y = gy - e.h;
+        e.stocks = 2;
+        e.invincible = 0;
+        e.doubleJumpUsed = false;
+        e.cpuTimer = Math.floor(Math.random() * 30);
+        this.enemies.push(e);
+      }
+      // P1のストック
+      this.p1.stocks = 5;
+      this.p1.invincible = 0;
+      this.p1.doubleJumpUsed = false;
+      this.timer = 180;
+    } else {
+      // 通常対戦
+      this.p2 = new Fighter(p2char, w*0.75, true);
+      this.p2.y = gy - this.p2.h;
+      this.p2.invincible = 0;
+      this.p2.doubleJumpUsed = false;
+      this.enemies = [];
+      this.timer = 99;
+    }
 
     this.running=false; this.paused=false;
-    this.timer=99; this.timerInterval=null; this.animFrame=null;
+    this.timerInterval=null; this.animFrame=null;
     this.hitEffects=[]; this.cpuTimer=0; this.ended=false;
-
-    // 乱闘モード
-    this.isBrawl = mode === 'brawl';
-    if (this.isBrawl) {
-      this.p1.stocks = 3; this.p1.hp = this.p1.maxHp;
-      this.p2.stocks = 3; this.p2.hp = this.p2.maxHp;
-      this.p1.invincible = 0; this.p2.invincible = 0;
-      this.p1.doubleJumpUsed = false; this.p2.doubleJumpUsed = false;
-      this.timer = 180; // 3分
-    }
 
     // Phase 2: 演出
     this.screenFlash = { active: false, color: '#fff', alpha: 0, timer: 0 };
@@ -308,20 +333,31 @@ class Engine {
 
   update() {
     const w=this.canvas.width, h=this.canvas.height;
-    if (this.mode==='vs-cpu') this.updateCPU();
 
-    this.p1.update(w,h,this.stage,this.p2);
-    this.p2.update(w,h,this.stage,this.p1);
-
-    this.checkMeleeHit(this.p1,this.p2);
-    this.checkMeleeHit(this.p2,this.p1);
-    this.checkProjectileHits(this.p1,this.p2);
-    this.checkProjectileHits(this.p2,this.p1);
+    if (this.isBrawl) {
+      this.p1.update(w, h, this.stage, this.enemies[0]);
+      this.enemies.forEach(e => {
+        if (e.state === 'dead' && e.stocks <= 0) return;
+        this.updateEnemyCPU(e);
+        e.update(w, h, this.stage, this.p1);
+        this.checkMeleeHit(this.p1, e);
+        this.checkMeleeHit(e, this.p1);
+        this.checkProjectileHits(this.p1, e);
+        this.checkProjectileHits(e, this.p1);
+      });
+    } else {
+      if (this.mode==='vs-cpu') this.updateCPU();
+      this.p1.update(w,h,this.stage,this.p2);
+      this.p2.update(w,h,this.stage,this.p1);
+      this.checkMeleeHit(this.p1,this.p2);
+      this.checkMeleeHit(this.p2,this.p1);
+      this.checkProjectileHits(this.p1,this.p2);
+      this.checkProjectileHits(this.p2,this.p1);
+    }
 
     this.hitEffects=this.hitEffects.filter(e=>e.life>0);
     this.hitEffects.forEach(e=>e.life--);
 
-    // 演出タイマー
     if (this.screenFlash.timer>0) {
       this.screenFlash.timer--;
       this.screenFlash.alpha *= 0.85;
@@ -346,6 +382,25 @@ class Engine {
       SFX.play('ko');
       setTimeout(()=>this.endRound(), 1600);
     }
+  }
+
+  updateEnemyCPU(enemy) {
+    enemy.cpuTimer = (enemy.cpuTimer || 0) - 1;
+    if (enemy.cpuTimer > 0) return;
+    const dist = Math.abs(enemy.centerX - this.p1.centerX);
+    enemy.input.left = false; enemy.input.right = false; enemy.input.jump = false;
+    if (dist > 80) {
+      enemy.centerX > this.p1.centerX ? (enemy.input.left = true) : (enemy.input.right = true);
+    }
+    if (dist < 120 && Math.random() < 0.55) {
+      const r = Math.random();
+      enemy.queueAttack(r < 0.5 ? 'normal' : r < 0.8 ? 'mid' : 'special');
+    }
+    if (Math.random() < 0.06 && enemy.onGround) enemy.input.jump = true;
+    if (enemy.char.attacks.normal.projectile && dist < 180) {
+      enemy.centerX > this.p1.centerX ? (enemy.input.right = true) : (enemy.input.left = true);
+    }
+    enemy.cpuTimer = Math.floor(4 + Math.random() * 10);
   }
 
   checkMeleeHit(attacker, defender) {
@@ -392,30 +447,31 @@ class Engine {
 
   updateHUD() {
     document.getElementById('p1-hp-bar').style.width=(this.p1.hp/this.p1.maxHp*100)+'%';
-    document.getElementById('p2-hp-bar').style.width=(this.p2.hp/this.p2.maxHp*100)+'%';
     document.getElementById('p1-hp-text').textContent=Math.ceil(this.p1.hp);
-    document.getElementById('p2-hp-text').textContent=Math.ceil(this.p2.hp);
 
-    // 乱闘モード: ストック表示
     if (this.isBrawl) {
+      const aliveCount = this.enemies.filter(e => !(e.state==='dead' && e.stocks<=0)).length;
+      document.getElementById('p2-hp-bar').style.width=(aliveCount/this.enemies.length*100)+'%';
+      document.getElementById('p2-hp-text').textContent=`残${aliveCount}体`;
       const p1stocks = document.getElementById('p1-stocks');
-      const p2stocks = document.getElementById('p2-stocks');
       if (p1stocks) p1stocks.textContent = '❤️'.repeat(Math.max(0, this.p1.stocks));
-      if (p2stocks) p2stocks.textContent = '❤️'.repeat(Math.max(0, this.p2.stocks));
+      const p2stocks = document.getElementById('p2-stocks');
+      if (p2stocks) p2stocks.textContent = '';
+    } else {
+      document.getElementById('p2-hp-bar').style.width=(this.p2.hp/this.p2.maxHp*100)+'%';
+      document.getElementById('p2-hp-text').textContent=Math.ceil(this.p2.hp);
     }
   }
 
   checkBrawlEnd() {
-    if (!this.isBrawl) return;
-    const p1dead = this.p1.stocks <= 0 && this.p1.state === 'dead';
-    const p2dead = this.p2.stocks <= 0 && this.p2.state === 'dead';
-    if (!this.ended && (p1dead || p2dead || this.timer <= 0)) {
+    const allDead = this.enemies.every(e => e.state==='dead' && e.stocks<=0);
+    const p1dead = this.p1.state==='dead' && this.p1.stocks<=0;
+    if (!this.ended && (allDead || p1dead || this.timer<=0)) {
       this.ended = true;
-      const winner = p1dead ? this.p2 : (p2dead ? this.p1 : (this.p1.hp >= this.p2.hp ? this.p1 : this.p2));
-      this.showAnnouncement('K.O.!', '#ff4466', 2.5);
-      this.triggerScreenFlash('#ff0000', 25);
+      this.showAnnouncement(allDead ? 'CLEAR!' : 'GAME OVER', allDead ? '#00e676' : '#ff4466', 2.2);
+      this.triggerScreenFlash(allDead ? '#00e676' : '#ff0000', 25);
       SFX.play('ko');
-      setTimeout(() => this.endRound(winner), 1600);
+      setTimeout(() => this.endRound(allDead ? this.p1 : this.enemies[0]), 1800);
     }
   }
 
@@ -446,7 +502,11 @@ class Engine {
     this.stage.bg(ctx,w,h);
     this.drawPlatforms(ctx,w,h);
     this.p1.draw(ctx);
-    this.p2.draw(ctx);
+    if (this.isBrawl) {
+      this.enemies.forEach(e => { if (!(e.state==='dead' && e.stocks<=0)) e.draw(ctx); });
+    } else {
+      this.p2.draw(ctx);
+    }
 
     // ヒットエフェクト
     this.hitEffects.forEach(e => {

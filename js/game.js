@@ -364,21 +364,20 @@ const Game = (() => {
   function initBattle() {
     if (engine) engine.stop();
     const isBrawl = selectedMode === 'brawl';
-    const is2P = selectedMode === 'vs-player' || isBrawl;
+    const is2P = selectedMode === 'vs-player';
     document.getElementById('p2-controls').style.display = is2P ? 'flex' : 'none';
     document.getElementById('p1-name').textContent = selectedChars.p1?.name || 'P1';
-    document.getElementById('p2-name').textContent = selectedChars.p2?.name || 'P2';
+    document.getElementById('p2-name').textContent = isBrawl ? '敵' : (selectedChars.p2?.name || 'P2');
     document.getElementById('round-label').textContent = isBrawl ? '乱闘モード' : 'ROUND 1';
     document.getElementById('round-timer').textContent = isBrawl ? '180' : '99';
     document.getElementById('p1-stocks').textContent = '';
     document.getElementById('p2-stocks').textContent = '';
-    // コンボガイドは5秒後に非表示
     const guide = document.getElementById('combo-guide');
     if (guide) { guide.style.display = ''; setTimeout(() => { guide.style.display = 'none'; }, 5000); }
     lastBattleResult = null;
 
     const canvas = document.getElementById('game-canvas');
-    engine = new Engine(canvas, selectedStage, selectedChars.p1, selectedChars.p2, selectedMode);
+    engine = new Engine(canvas, selectedStage, selectedChars.p1, selectedChars.p2 || CHARACTERS[0], selectedMode);
     setupKeyboard();
     setupTouch();
     setTimeout(() => engine.start(), 300);
