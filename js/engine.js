@@ -22,10 +22,12 @@ class Fighter {
     this.projectiles = [];
     this.comboCount = 0; this.comboTimer = 0;
     this.flashTimer = 0;
-    // Phase 2: ヒットストップ
     this.hitstopTimer = 0;
-    // Phase 2: 残像（アフターイメージ）
     this.afterImages = [];
+    // 追加初期化
+    this.doubleJumpUsed = false;
+    this.invincible = 0;
+    this.stocks = undefined;
   }
 
   get centerX() { return this.x + this.w / 2; }
@@ -528,7 +530,8 @@ class Engine {
     });
 
     // コンボ表示
-    [this.p1,this.p2].forEach(f => {
+    const fighters = this.isBrawl ? [this.p1, ...this.enemies] : [this.p1, this.p2];
+    fighters.filter(Boolean).forEach(f => {
       if (f.comboCount>=2 && f.comboTimer>0) {
         const bx=f.isP2?w*0.68:w*0.05;
         ctx.font='bold 20px Orbitron,sans-serif';
@@ -590,11 +593,19 @@ class Engine {
     if (this.timerInterval) clearInterval(this.timerInterval);
     let winner = forcedWinner;
     if (!winner) {
-      if (this.p1.state === 'dead' && this.p2.state !== 'dead') winner = this.p2;
-      else if (this.p2.state === 'dead' && this.p1.state !== 'dead') winner = this.p1;
-      else if (this.p1.hp <= 0 && this.p2.hp > 0) winner = this.p2;
-      else if (this.p2.hp <= 0 && this.p1.hp > 0) winner = this.p1;
-      else winner = this.p1.hp >= this.p2.hp ? this.p1 : this.p2;
+      if (!this.p2) {
+        winner = this.p1;
+      } else if (this.p1.state === 'dead' && this.p2.state !== 'dead') {
+        winner = this.p2;
+      } else if (this.p2.state === 'dead' && this.p1.state !== 'dead') {
+        winner = this.p1;
+      } else if (this.p1.hp <= 0 && this.p2.hp > 0) {
+        winner = this.p2;
+      } else if (this.p2.hp <= 0 && this.p1.hp > 0) {
+        winner = this.p1;
+      } else {
+        winner = this.p1.hp >= this.p2.hp ? this.p1 : this.p2;
+      }
     }
     Game.showResult(winner);
   }
