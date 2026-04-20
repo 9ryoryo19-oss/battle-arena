@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <title>BATTLE ARENA</title>
-  <link rel="stylesheet" href="css/style.css?v=26">
+  <link rel="stylesheet" href="css/style.css?v=27">
 </head>
 <body>
 
@@ -159,6 +159,16 @@
         <h2>設定</h2>
       </div>
       <div class="settings-content">
+        <div class="settings-item">
+          <div class="settings-label">BGM音量</div>
+          <div class="settings-volume">
+            <span>🔇</span>
+            <input type="range" id="bgm-volume" min="0" max="100" value="35"
+              oninput="BGM.setVolume(this.value/100); document.getElementById('bgm-vol-val').textContent=this.value+'%'">
+            <span>🔊</span>
+            <span id="bgm-vol-val">35%</span>
+          </div>
+        </div>
         <div class="settings-item">
           <div class="settings-label">スマホ操作</div>
           <div class="settings-value">左スティック: 移動 / 右ボタン群: 攻撃・ジャンプ</div>
@@ -353,11 +363,12 @@
     </div>
   </div>
 
-  <script src="js/characters.js?v=26"></script>
-  <script src="js/stages.js?v=26"></script>
-  <script src="js/sfx.js?v=26"></script>
-  <script src="js/engine.js?v=26"></script>
-  <script src="js/auth.js?v=26"></script>
-  <script src="js/game.js?v=26"></script>
+  <script src="js/characters.js?v=27"></script>
+  <script src="js/stages.js?v=27"></script>
+  <script src="js/sfx.js?v=27"></script>
+  <script src="js/bgm.js?v=27"></script>
+  <script src="js/engine.js?v=27"></script>
+  <script src="js/auth.js?v=27"></script>
+  <script src="js/game.js?v=27"></script>
 </body>
 </html>

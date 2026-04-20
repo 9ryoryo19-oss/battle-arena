@@ -18,7 +18,16 @@ const Game = (() => {
     if (id === 'screen-stage') initStageSelect();
     if (id === 'screen-battle') initBattle();
     if (id === 'screen-ranking') loadRankingScreen();
-    if (id === 'screen-title') Auth.updateAuthUI ? Auth.updateAuthUI() : null;
+    if (id === 'screen-profile') loadProfileScreen();
+    // BGM
+    BGM.resume();
+    if (['screen-title','screen-mode','screen-character','screen-stage','screen-auth','screen-ranking','screen-profile','screen-settings'].includes(id)) {
+      BGM.playTitle();
+    } else if (id === 'screen-battle') {
+      BGM.playBattle();
+    } else if (id === 'screen-result') {
+      BGM.stop();
+    }
   }
 
   function selectMode(mode) {

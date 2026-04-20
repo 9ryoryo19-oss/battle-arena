@@ -737,3 +737,19 @@ button { cursor: pointer; font-family: var(--font-body); }
 .combo-item + .combo-item {
   border-top: 1px solid rgba(255,255,255,0.05);
 }
+
+/* ===== VOLUME SLIDER ===== */
+.settings-volume {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 4px;
+}
+.settings-volume input[type=range] {
+  flex: 1; height: 4px;
+  -webkit-appearance: none; appearance: none;
+  background: var(--border2); border-radius: 2px; outline: none;
+}
+.settings-volume input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 18px; height: 18px;
+  background: var(--p2); border-radius: 50%; cursor: pointer;
+}
+.settings-volume span { font-size: 12px; color: var(--text2); min-width: 36px; }
